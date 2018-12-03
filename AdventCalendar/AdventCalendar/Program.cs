@@ -11,7 +11,7 @@ namespace AdventCalendar
     {
         static void Main(string[] args)
         {
-            Problem1(@"..\..\problem1.txt");
+            //Problem1(@"..\..\problem1.txt");
             Problem2(@"..\..\problem2.txt");
             Problem3(@"..\..\problem3.txt");
             Problem4(@"..\..\problem4.txt");
@@ -79,14 +79,66 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 2
+        /// Part 1: Find words with double or triple letter counts, multiply for checksum.
+        /// Part 2: Find the two words that differ by 1 letter, what is letters in common?
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem2(string __input)
         {
             var line = File.ReadAllLines(__input);
+            int doubles = 0;
+            int triples = 0;
 
-            Console.WriteLine("Day 2, Problem 1: ");
-            Console.WriteLine("Day 2, Problem 2: ");
+            foreach (var l in line)
+            {
+                Dictionary<char, int> letters = new Dictionary<char, int>();
+                foreach (var c in l.ToCharArray())
+                {
+                    if (!letters.ContainsKey(c))
+                        letters.Add(c, 1);
+                    else
+                        letters[c]++;
+                }
+                bool d = false, t = false;
+                foreach (var v in letters.Values)
+                {
+                    if (v == 2 && !d)
+                    {
+                        doubles++;
+                        d = true;
+                    }
+                    else if (v == 3 && !t)
+                    {
+                        triples++;
+                        t = true;
+                    }
+                }
+            }
+
+            string match = "";
+            int diffs = 0;
+            foreach (var l in line)
+            {
+                foreach (var k in line)
+                {
+                    diffs = 0;
+                    for (int i = 0; i < l.Length; i++)
+                    {
+                        if (l.ToCharArray()[i] != k.ToCharArray()[i])
+                        {
+                            diffs++;
+                            match = k.Remove(i, 1);
+                        }                            
+                    }
+                    if (diffs == 1)
+                        break;
+                }
+                if (diffs == 1)
+                    break;
+            }
+
+            Console.WriteLine("Day 2, Problem 1: " + (doubles * triples).ToString());
+            Console.WriteLine("Day 2, Problem 2: " + match);
         }
 
         /// <summary>
