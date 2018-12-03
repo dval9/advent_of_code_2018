@@ -12,8 +12,8 @@ namespace AdventCalendar
         static void Main(string[] args)
         {
             //Problem1(@"..\..\problem1.txt");
-            Problem2(@"..\..\problem2.txt");
-            Problem3(@"..\..\problem3.txt");
+            //Problem2(@"..\..\problem2.txt");
+            //Problem3(@"..\..\problem3.txt");
             Problem4(@"..\..\problem4.txt");
             Problem5(@"..\..\problem5.txt");
             Problem6(@"..\..\problem6.txt");
@@ -48,6 +48,7 @@ namespace AdventCalendar
         static void Problem1(string __input)
         {
             var line = File.ReadAllLines(__input);
+
             int freq = 0;
             foreach (var l in line)
             {
@@ -73,6 +74,7 @@ namespace AdventCalendar
                     }
                 }
             }
+
             Console.WriteLine("Day 1, Problem 1: " + freq1.ToString());
             Console.WriteLine("Day 1, Problem 2: " + duplicate.ToString());
         }
@@ -86,9 +88,9 @@ namespace AdventCalendar
         static void Problem2(string __input)
         {
             var line = File.ReadAllLines(__input);
+
             int doubles = 0;
             int triples = 0;
-
             foreach (var l in line)
             {
                 Dictionary<char, int> letters = new Dictionary<char, int>();
@@ -128,7 +130,7 @@ namespace AdventCalendar
                         {
                             diffs++;
                             match = k.Remove(i, 1);
-                        }                            
+                        }
                     }
                     if (diffs == 1)
                         break;
@@ -143,14 +145,61 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 3
+        /// Part 1: Count the number of overlapping squares.
+        /// Part 2: Find the single claim that is not overlapping.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem3(string __input)
         {
             var line = File.ReadAllLines(__input);
 
-            Console.WriteLine("Day 3, Problem 1: ");
-            Console.WriteLine("Day 3, Problem 2: ");
+            int[,] table = new int[1100, 1100];
+            char[] delims = { '#', ' ', '@', ',', ':', 'x' };
+            int sum = 0;
+            foreach (var l in line)
+            {
+                var r = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < int.Parse(r[3]); i++)
+                {
+                    for (int j = 0; j < int.Parse(r[4]); j++)
+                    {
+                        table[i + int.Parse(r[1]), j + int.Parse(r[2])]++;
+                    }
+                }
+            }
+            for (int i = 0; i < 1100; i++)
+            {
+                for (int j = 0; j < 1100; j++)
+                {
+                    if (table[i, j] > 1)
+                        sum++;
+                }
+            }
+
+            string no_overlap = "";
+            foreach (var l in line)
+            {
+                var r = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                bool overlap = false;
+                for (int i = 0; i < int.Parse(r[3]); i++)
+                {
+                    for (int j = 0; j < int.Parse(r[4]); j++)
+                    {
+                        if (table[i + int.Parse(r[1]), j + int.Parse(r[2])] != 1)
+                        {
+                            overlap = true;
+                            break;
+                        }                            
+                    }
+                    if (overlap)
+                        break;
+                }
+                if (!overlap)
+                    no_overlap = r[0];
+            }
+
+            Console.WriteLine("Day 3, Problem 1: " + sum.ToString());
+            Console.WriteLine("Day 3, Problem 2: " + no_overlap);
         }
 
         /// <summary>
