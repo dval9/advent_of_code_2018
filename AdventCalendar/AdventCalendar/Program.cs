@@ -41,14 +41,40 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 1
+        /// Part 1: Sum the rows of numbers.
+        /// Part 2: Find the first repeting number in the sequence while you sum the rows of numbers.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem1(string __input)
         {
             var line = File.ReadAllLines(__input);
+            int freq = 0;
+            foreach (var l in line)
+            {
+                freq += int.Parse(l);
+            }
+            int freq1 = freq;
 
-            Console.WriteLine("Day 1, Problem 1: ");
-            Console.WriteLine("Day 1, Problem 2: ");
+            line = File.ReadAllLines(__input);
+            freq = 0;
+            int duplicate = int.MaxValue;
+            Dictionary<int, int> freqs = new Dictionary<int, int>();
+            while (duplicate == int.MaxValue)
+            {
+                foreach (var l in line)
+                {
+                    freq += int.Parse(l);
+                    if (!freqs.ContainsKey(freq))
+                        freqs.Add(freq, 1);
+                    else
+                    {
+                        duplicate = freq;
+                        break;
+                    }
+                }
+            }
+            Console.WriteLine("Day 1, Problem 1: " + freq1.ToString());
+            Console.WriteLine("Day 1, Problem 2: " + duplicate.ToString());
         }
 
         /// <summary>
