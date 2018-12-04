@@ -189,7 +189,7 @@ namespace AdventCalendar
                         {
                             overlap = true;
                             break;
-                        }                            
+                        }
                     }
                     if (overlap)
                         break;
@@ -204,14 +204,80 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 4
+        /// Part 1: Sort the list, find the number that is asleep the most. What minute overlaps the most.
+        /// Part 2: What minute is slept the most.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem4(string __input)
         {
             var line = File.ReadAllLines(__input);
 
-            Console.WriteLine("Day 4, Problem 1: ");
-            Console.WriteLine("Day 4, Problem 2: ");
+            char[] delims = { ' ', '[', ']', '#', '-', ':' };
+            SortedDictionary<DateTime, string> times = new SortedDictionary<DateTime, string>();
+            Dictionary<string, int> guards = new Dictionary<string, int>();
+            foreach (var l in line)
+            {
+                var s = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                var date = new DateTime(int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]), int.Parse(s[4]), 0);
+                var action = s[6];
+                if (!(action.Equals("up") || action.Equals("asleep")) && !guards.ContainsKey(action))
+                    guards.Add(action, 0);
+                times.Add(date, action);
+            }
+
+            Dictionary<string, int[]> sleep = new Dictionary<string, int[]>();
+            foreach (var g in guards)
+                sleep.Add(g.Key, new int[60]);
+
+            string guard = "";
+            int asleep = -1, up = -1;
+            foreach (var t in times)
+            {
+                if (t.Value.Equals("up"))
+                    up = t.Key.Minute;
+                else if (t.Value.Equals("asleep"))
+                    asleep = t.Key.Minute;
+                else
+                    guard = t.Value;
+
+                if (asleep != -1 && up != -1)
+                {
+                    for (int i = asleep; i < up; i++)
+                        sleep[guard][i]++;
+
+                    asleep = -1;
+                    up = -1;
+                }
+            }
+
+            string guard_max = "";
+            int max_sleep = 0;
+            int guard_minute = 0;
+            foreach (var s in sleep)
+            {
+                if (s.Value.Sum() > max_sleep)
+                {
+                    max_sleep = s.Value.Sum();
+                    guard_max = s.Key;
+                    guard_minute = s.Value.ToList().IndexOf(s.Value.Max());
+                }                    
+            }
+
+            int max_sleep_minute = 0;
+            int max_sleep_count = 0;
+            string max_sleep_guard = "";
+            foreach (var s in sleep)
+            {
+                if (s.Value.Max() > max_sleep_count)
+                {
+                    max_sleep_count = s.Value.Max();
+                    max_sleep_guard = s.Key;
+                    max_sleep_minute = s.Value.ToList().IndexOf(s.Value.Max());
+                }
+            }
+
+            Console.WriteLine("Day 4, Problem 1: "  + (int.Parse(guard_max) * guard_minute).ToString());
+            Console.WriteLine("Day 4, Problem 2: " + (int.Parse(max_sleep_guard) * max_sleep_minute).ToString());
         }
 
         /// <summary>
