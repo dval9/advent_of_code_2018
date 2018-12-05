@@ -14,7 +14,7 @@ namespace AdventCalendar
             //Problem1(@"..\..\problem1.txt");
             //Problem2(@"..\..\problem2.txt");
             //Problem3(@"..\..\problem3.txt");
-            Problem4(@"..\..\problem4.txt");
+            //Problem4(@"..\..\problem4.txt");
             Problem5(@"..\..\problem5.txt");
             Problem6(@"..\..\problem6.txt");
             Problem7(@"..\..\problem7.txt");
@@ -260,7 +260,7 @@ namespace AdventCalendar
                     max_sleep = s.Value.Sum();
                     guard_max = s.Key;
                     guard_minute = s.Value.ToList().IndexOf(s.Value.Max());
-                }                    
+                }
             }
 
             int max_sleep_minute = 0;
@@ -276,7 +276,7 @@ namespace AdventCalendar
                 }
             }
 
-            Console.WriteLine("Day 4, Problem 1: "  + (int.Parse(guard_max) * guard_minute).ToString());
+            Console.WriteLine("Day 4, Problem 1: " + (int.Parse(guard_max) * guard_minute).ToString());
             Console.WriteLine("Day 4, Problem 2: " + (int.Parse(max_sleep_guard) * max_sleep_minute).ToString());
         }
 
@@ -288,8 +288,57 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
 
-            Console.WriteLine("Day 5, Problem 1: ");
-            Console.WriteLine("Day 5, Problem 2: ");
+            var polymer = line[0].ToCharArray();
+            var chars = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
+            Stack<char> s = new Stack<char>();
+            s.Push(' ');
+
+            foreach (var c in polymer)
+            {
+                if (char.IsUpper(c))
+                    if (s.Peek().Equals(char.ToLower(c)))
+                        s.Pop();
+                    else
+                        s.Push(c);
+                else if (char.IsLower(c))
+                    if (s.Peek().Equals(char.ToUpper(c)))
+                        s.Pop();
+                    else
+                        s.Push(c);
+            }
+            var p1_count = s.Count - 1;
+                        
+            int shortest = int.MaxValue;
+            foreach (var l in chars)
+            {
+                s.Clear();
+                s.Push(' ');
+                foreach (var c in polymer)
+                {
+                    if (!char.ToLower(c).Equals(char.ToLower(l)))
+                    {
+                        if (char.IsUpper(c))
+                        {
+                            if (s.Peek().Equals(char.ToLower(c)))
+                                s.Pop();
+                            else
+                                s.Push(c);
+                        }
+                        else if (char.IsLower(c))
+                        {
+                            if (s.Peek().Equals(char.ToUpper(c)))
+                                s.Pop();
+                            else
+                                s.Push(c);
+                        }
+                    }
+                }
+                if (s.Count - 1 < shortest)
+                    shortest = s.Count - 1;
+            }
+
+            Console.WriteLine("Day 5, Problem 1: " + p1_count.ToString());
+            Console.WriteLine("Day 5, Problem 2: " + shortest.ToString());
         }
 
         /// <summary>
