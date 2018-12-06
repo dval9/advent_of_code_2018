@@ -472,12 +472,34 @@ namespace AdventCalendar
 
             for (int j = 0; j < grid_size; j++)
             {
+                int i = 0;
+                var g = grid[i, j];
+                var n = g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+                if (!n.Equals(".."))
+                    size[n] = 0;
+                g = grid[j, i];
+                n = g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+                if (!n.Equals(".."))
+                    size[n] = 0;
+
+                i = grid_size - 1;
+                g = grid[i, j];
+                n = g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+                if (!n.Equals(".."))
+                    size[n] = 0;
+                i = grid_size - 1;
+                g = grid[j, i];
+                n = g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+                if (!n.Equals(".."))
+                    size[n] = 0;
             }
 
-                foreach (var kv in size)
-                Console.WriteLine(kv.Key + "," + kv.Value.ToString());
+            var max = 0;
+            foreach (var kv in size)
+                if (kv.Value > max)
+                    max = kv.Value;
 
-            Console.WriteLine("Day 6, Problem 1: ");
+            Console.WriteLine("Day 6, Problem 1: " + max);
             Console.WriteLine("Day 6, Problem 2: ");
         }
 
