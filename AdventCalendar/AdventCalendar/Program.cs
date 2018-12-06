@@ -15,7 +15,7 @@ namespace AdventCalendar
             //Problem2(@"..\..\problem2.txt");
             //Problem3(@"..\..\problem3.txt");
             //Problem4(@"..\..\problem4.txt");
-            Problem5(@"..\..\problem5.txt");
+            //Problem5(@"..\..\problem5.txt");
             Problem6(@"..\..\problem6.txt");
             Problem7(@"..\..\problem7.txt");
             Problem8(@"../../problem8.txt");
@@ -282,6 +282,8 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 5
+        /// Part 1: Use a stack to clean up matching pairs of lower/Upper case letters. What is the length?
+        /// Part 2: Clean up as in part 1, plus remove all occurances of a single character ignoring case.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem5(string __input)
@@ -307,7 +309,7 @@ namespace AdventCalendar
                         s.Push(c);
             }
             var p1_count = s.Count - 1;
-                        
+
             int shortest = int.MaxValue;
             foreach (var l in chars)
             {
@@ -348,6 +350,132 @@ namespace AdventCalendar
         static void Problem6(string __input)
         {
             var line = File.ReadAllLines(__input);
+            char[] delims = { ' ', ',' };
+            int grid_size = 400;
+            string[,] grid = new string[grid_size, grid_size];
+            for (int i = 0; i < grid_size; i++)
+                for (int j = 0; j < grid_size; j++)
+                    grid[i, j] = "";
+            Dictionary<string, int> size = new Dictionary<string, int>();
+            for (int i = 0; i < line.Count(); i++)
+            {
+                var l = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                grid[int.Parse(l[0]), int.Parse(l[1])] = "A" + i.ToString() + ",0";
+                size.Add("A" + i.ToString(), 0);
+            }
+
+            for (int distance = 1; distance < grid_size; distance++)
+            {
+                foreach (var l in line)
+                {
+                    var loc = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                    var x = int.Parse(loc[0]);
+                    var y = int.Parse(loc[1]);
+                    var name = grid[x, y].Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+
+                    int i, j;
+
+                    i = x - distance;
+                    for (j = y - distance; j <= y + distance; j++)
+                    {
+                        var d = Math.Abs(x - i) + Math.Abs(y - j);
+                        if (i < 0 || i >= grid_size || j < 0 || j >= grid_size || d == 0)
+                            continue;
+                        var g = grid[i, j];
+                        if (string.IsNullOrEmpty(g))
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (int.Parse(g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]) > d)
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1].Equals(d.ToString())
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals("..")
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals(name))
+                            grid[i, j] = "..," + d.ToString();
+                    }
+
+                    i = x + distance;
+                    for (j = y - distance; j <= y + distance; j++)
+                    {
+                        var d = Math.Abs(x - i) + Math.Abs(y - j);
+                        if (i < 0 || i >= grid_size || j < 0 || j >= grid_size || d == 0)
+                            continue;
+                        var g = grid[i, j];
+                        if (string.IsNullOrEmpty(g))
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (int.Parse(g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]) > d)
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1].Equals(d.ToString())
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals("..")
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals(name))
+                            grid[i, j] = "..," + d.ToString();
+                    }
+
+                    j = y - distance;
+                    for (i = x - distance; i <= x + distance; i++)
+                    {
+                        var d = Math.Abs(x - i) + Math.Abs(y - j);
+                        if (i < 0 || i >= grid_size || j < 0 || j >= grid_size || d == 0)
+                            continue;
+                        var g = grid[i, j];
+                        if (string.IsNullOrEmpty(g))
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (int.Parse(g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]) > d)
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1].Equals(d.ToString())
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals("..")
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals(name))
+                            grid[i, j] = "..," + d.ToString();
+                    }
+
+                    j = y + distance;
+                    for (i = x - distance; i <= x + distance; i++)
+                    {
+                        var d = Math.Abs(x - i) + Math.Abs(y - j);
+                        if (i < 0 || i >= grid_size || j < 0 || j >= grid_size || d == 0)
+                            continue;
+                        var g = grid[i, j];
+                        if (string.IsNullOrEmpty(g))
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (int.Parse(g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]) > d)
+                            grid[i, j] = name + "," + d.ToString();
+                        else if (g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[1].Equals(d.ToString())
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals("..")
+                            && !g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0].Equals(name))
+                            grid[i, j] = "..," + d.ToString();
+                    }
+                }
+            }
+
+            //for (int i = 0; i < grid_size; i++)
+            //{
+            //    for (int j = 0; j < grid_size; j++)
+            //        if (string.IsNullOrEmpty(grid[j, i]))
+            //            Console.Write("    |");
+            //        else
+            //            Console.Write(grid[j, i] + "|");
+            //    Console.WriteLine("");
+            //    for (int j = 0; j < grid_size; j++)
+            //        Console.Write("_____");
+            //    Console.WriteLine("");
+            //}
+            //Console.WriteLine("");
+
+            for (int i = 0; i < grid_size; i++)
+            {
+                for (int j = 0; j < grid_size; j++)
+                {
+                    var g = grid[i, j];
+                    var n = g.Split(delims, StringSplitOptions.RemoveEmptyEntries)[0];
+                    if (!n.Equals(".."))
+                        size[n]++;
+                }
+            }
+
+            for (int j = 0; j < grid_size; j++)
+            {
+            }
+
+                foreach (var kv in size)
+                Console.WriteLine(kv.Key + "," + kv.Value.ToString());
 
             Console.WriteLine("Day 6, Problem 1: ");
             Console.WriteLine("Day 6, Problem 2: ");
