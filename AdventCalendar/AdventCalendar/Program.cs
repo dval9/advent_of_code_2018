@@ -16,7 +16,7 @@ namespace AdventCalendar
             //Problem3(@"..\..\problem3.txt");
             //Problem4(@"..\..\problem4.txt");
             //Problem5(@"..\..\problem5.txt");
-            Problem6(@"..\..\problem6.txt");
+            //Problem6(@"..\..\problem6.txt");
             Problem7(@"..\..\problem7.txt");
             Problem8(@"../../problem8.txt");
             Problem9(@"..\..\problem9.txt");
@@ -345,6 +345,8 @@ namespace AdventCalendar
 
         /// <summary>
         /// DAY 6
+        /// Part 1: Find size of largest area closest to point.
+        /// Part 2: Find total area that has all points within distance.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem6(string __input)
@@ -445,20 +447,6 @@ namespace AdventCalendar
                 }
             }
 
-            //for (int i = 0; i < grid_size; i++)
-            //{
-            //    for (int j = 0; j < grid_size; j++)
-            //        if (string.IsNullOrEmpty(grid[j, i]))
-            //            Console.Write("    |");
-            //        else
-            //            Console.Write(grid[j, i] + "|");
-            //    Console.WriteLine("");
-            //    for (int j = 0; j < grid_size; j++)
-            //        Console.Write("_____");
-            //    Console.WriteLine("");
-            //}
-            //Console.WriteLine("");
-
             for (int i = 0; i < grid_size; i++)
             {
                 for (int j = 0; j < grid_size; j++)
@@ -499,20 +487,123 @@ namespace AdventCalendar
                 if (kv.Value > max)
                     max = kv.Value;
 
+            var max_distance = 10000;
+            var region_size = 0;
+            for (int i = 0; i < grid_size; i++)
+            {
+                for (int j = 0; j < grid_size; j++)
+                {
+                    var curr_distance = 0;
+                    foreach (var l in line)
+                    {
+                        var loc = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                        var x = int.Parse(loc[0]);
+                        var y = int.Parse(loc[1]);
+                        curr_distance += Math.Abs(i - x) + Math.Abs(j - y);
+                    }
+                    if (curr_distance < max_distance)
+                        region_size++;
+                }
+            }
+
             Console.WriteLine("Day 6, Problem 1: " + max);
-            Console.WriteLine("Day 6, Problem 2: ");
+            Console.WriteLine("Day 6, Problem 2: " + region_size);
         }
 
         /// <summary>
         /// DAY 7
+        /// Part 1: Print the order you traverse the graph.
+        /// Part 2: How long does it take to traverse the graph with multiple users.
         /// </summary>
         /// <param name="__input">File name to read the input</param>
         static void Problem7(string __input)
         {
             var line = File.ReadAllLines(__input);
+            char[] delims = { ' ' };
+            SortedList<string, List<string>> reqs = new SortedList<string, List<string>>();
+            string order = "";
+            foreach (var l in line)
+            {
+                var c = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (!reqs.ContainsKey(c[1]))
+                    reqs.Add(c[1], new List<string>());
 
-            Console.WriteLine("Day 7, Problem 1: ");
-            Console.WriteLine("Day 7, Problem 2: ");
+                if (!reqs.ContainsKey(c[7]))
+                    reqs.Add(c[7], new List<string> { c[1] });
+                else
+                    reqs[c[7]].Add(c[1]);
+
+            }
+
+            while (reqs.Count != 0)
+            {
+                foreach (var r in reqs)
+                {
+                    if (r.Value.Count == 0)
+                    {
+                        var step = r.Key;
+                        order += step;
+                        reqs.Remove(r.Key);
+                        foreach (var s in reqs)
+                            s.Value.RemoveAll(item => item.Equals(step));
+                        break;
+                    }
+                }
+            }
+
+            foreach (var l in line)
+            {
+                var c = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (!reqs.ContainsKey(c[1]))
+                    reqs.Add(c[1], new List<string>());
+
+                if (!reqs.ContainsKey(c[7]))
+                    reqs.Add(c[7], new List<string> { c[1] });
+                else
+                    reqs[c[7]].Add(c[1]);
+
+            }
+
+            var workers = 5;
+            var processing = 0;
+            var t = 0;
+            string order2 = "";
+            Dictionary<string, int> timer = new Dictionary<string, int>();
+            while (reqs.Count != 0)
+            {
+                for (int i = 0; i < timer.Count; i++)
+                {
+                    var s = timer.ElementAt(i);
+                    timer[s.Key] = s.Value - 1;
+                    if (timer[s.Key] == 0)
+                    {
+                        processing--;
+                        i--;
+                        order2 += s.Key;
+                        foreach (var r in reqs)
+                            r.Value.RemoveAll(item => item.Equals(s.Key));
+                        timer.Remove(s.Key);
+                    }
+                }
+
+                for (int i = 0; i < reqs.Count; i++)
+                {
+                    var r = reqs.ElementAt(i);
+                    if (processing == workers)
+                        break;
+                    if (r.Value.Count == 0)
+                    {
+                        var step = r.Key;
+                        reqs.Remove(r.Key);
+                        processing++;
+                        timer.Add(step, char.ToUpper(step[0]) - 64+60);
+                    }
+                }                
+                t++;     
+            }
+
+            Console.WriteLine("Day 7, Problem 1: " + order);
+            Console.WriteLine("Day 7, Problem 2: " + (t + timer.ElementAt(0).Value - 1).ToString());
         }
 
         /// <summary>
