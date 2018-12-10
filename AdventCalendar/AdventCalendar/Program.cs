@@ -17,9 +17,9 @@ namespace AdventCalendar
             //Problem4(@"..\..\problem4.txt");
             //Problem5(@"..\..\problem5.txt");
             //Problem6(@"..\..\problem6.txt");
-            Problem7(@"..\..\problem7.txt");
-            Problem8(@"../../problem8.txt");
-            Problem9(@"..\..\problem9.txt");
+            //Problem7(@"..\..\problem7.txt");
+            //Problem8(@"../../problem8.txt");
+            //Problem9(@"..\..\problem9.txt");
             Problem10(@"..\..\problem10.txt");
             Problem11(@"..\..\problem11.txt");
             Problem12(@"..\..\problem12.txt");
@@ -596,10 +596,10 @@ namespace AdventCalendar
                         var step = r.Key;
                         reqs.Remove(r.Key);
                         processing++;
-                        timer.Add(step, char.ToUpper(step[0]) - 64+60);
+                        timer.Add(step, char.ToUpper(step[0]) - 64 + 60);
                     }
-                }                
-                t++;     
+                }
+                t++;
             }
 
             Console.WriteLine("Day 7, Problem 1: " + order);
@@ -613,9 +613,84 @@ namespace AdventCalendar
         static void Problem8(string __input)
         {
             var line = File.ReadAllLines(__input);
+            char[] delims = { ' ' };
+            var nodes = line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries);
 
-            Console.WriteLine("Day 8, Problem 1: ");
-            Console.WriteLine("Day 8, Problem 2: ");
+            Stack<int> children = new Stack<int>();
+            Stack<int> metadata = new Stack<int>();
+            int total = 0;
+
+            int i = 0;
+
+            children.Push(int.Parse(nodes[i++]));
+            metadata.Push(int.Parse(nodes[i++]));
+            var root = new Problem8_Node(null);
+            var n = root;
+            for (; i < nodes.Length;)
+            {
+                if (children.Peek() != 0)
+                {
+                    children.Push(children.Pop() - 1);
+                    children.Push(int.Parse(nodes[i++]));
+                    metadata.Push(int.Parse(nodes[i++]));
+                    var c = new Problem8_Node(n);
+                    n.children.Add(c);
+                    n = c;
+                }
+                if (children.Peek() == 0)
+                {
+                    children.Pop();
+                    int m_count = metadata.Pop();
+                    var v = 0;
+                    for (int j = 0; j < m_count; j++)
+                    {
+                        v += int.Parse(nodes[i + j]);
+                        n.metadata.Add(int.Parse(nodes[i + j]));
+                    }
+                    total += v;
+                    if (n.children.Count == 0)
+                        n.value += v;
+                    i += m_count;
+                    n = n.parent;
+                }
+            }
+
+
+            Console.WriteLine("Day 8, Problem 1: " + total);
+            Console.WriteLine("Day 8, Problem 2: " + root.CalcValue());
+        }
+
+        /// <summary>
+        /// Helper class for building and traversing tree for Day 8.
+        /// </summary>
+        private class Problem8_Node
+        {
+            public List<Problem8_Node> children { get; set; }
+            public List<int> metadata { get; set; }
+            public Problem8_Node parent { get; set; }
+            public int value { get; set; }
+            public Problem8_Node(Problem8_Node parent)
+            {
+                children = new List<Problem8_Node>();
+                metadata = new List<int>();
+                value = 0;
+                this.parent = parent;
+            }
+
+            public int CalcValue()
+            {
+                var v = 0;
+                if (children.Count == 0)
+                    v = value;
+                else
+                {
+                    foreach (var m in metadata)
+                        if (m <= children.Count)
+                            v += children[m - 1].CalcValue();
+                    value = v;
+                }
+                return v;
+            }
         }
 
         /// <summary>
@@ -625,9 +700,62 @@ namespace AdventCalendar
         static void Problem9(string __input)
         {
             var line = File.ReadAllLines(__input);
+            char[] delims = { ' ' };
 
-            Console.WriteLine("Day 9, Problem 1: ");
-            Console.WriteLine("Day 9, Problem 2: ");
+            var players = int.Parse(line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries)[0]);
+            var marbles = int.Parse(line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries)[6]);
+
+            var scores = new long[players];
+            var circle = new LinkedList<long>();
+            var current = circle.AddFirst(0);
+
+            for (int i = 1; i < marbles; i++)
+            {
+                if (i % 23 == 0)
+                {
+                    scores[i % players] += i;
+                    for (int j = 0; j < 7; j++)
+                    {
+                        current = current.Previous ?? circle.Last;
+                    }
+                    scores[i % players] += current.Value;
+                    var remove = current;
+                    current = remove.Next;
+                    circle.Remove(remove);
+                }
+                else
+                {
+                    current = circle.AddAfter(current.Next ?? circle.First, i);
+                }
+            }
+
+            Console.WriteLine("Day 9, Problem 1: " + scores.Max());
+
+            marbles *= 100;
+            scores = new long[players];
+            circle = new LinkedList<long>();
+            current = circle.AddFirst(0);
+
+            for (int i = 1; i < marbles; i++)
+            {
+                if (i % 23 == 0)
+                {
+                    scores[i % players] += i;
+                    for (int j = 0; j < 7; j++)
+                    {
+                        current = current.Previous ?? circle.Last;
+                    }
+                    scores[i % players] += current.Value;
+                    var remove = current;
+                    current = remove.Next;
+                    circle.Remove(remove);
+                }
+                else
+                {
+                    current = circle.AddAfter(current.Next ?? circle.First, i);
+                }
+            }
+            Console.WriteLine("Day 9, Problem 2: " + scores.Max());
         }
 
         /// <summary>
@@ -637,9 +765,71 @@ namespace AdventCalendar
         static void Problem10(string __input)
         {
             var line = File.ReadAllLines(__input);
+            char[] delims = { ',', ' ', '<', '>' };
+            char[] d = { };
+            List<Point> p = new List<Point>();
+            List<Point> v = new List<Point>();
 
-            Console.WriteLine("Day 10, Problem 1: ");
-            Console.WriteLine("Day 10, Problem 2: ");
+            foreach (var l in line)
+            {
+                var s = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                p.Add(new Point(int.Parse(s[1]), int.Parse(s[2])));
+                v.Add(new Point(int.Parse(s[4]), int.Parse(s[5])));
+            }
+
+            int x_min = p.Min(x => x.x);
+            int x_max = p.Max(x => x.x);
+            int y_min = p.Min(x => x.y);
+            int y_max = p.Max(x => x.y);
+
+            for (int t = 1; ; t++)
+            {
+                var last = p.Select(x => new Point(x.x, x.y)).ToList();
+                for (int i = 0; i < p.Count; i++)
+                {
+                    p[i].x += v[i].x;
+                    p[i].y += v[i].y;
+                }
+
+                var x_new_min = p.Min(x => x.x);
+                var x_new_max = p.Max(x => x.x);
+                var y_new_min = p.Min(x => x.y);
+                var y_new_max = p.Max(x => x.y);
+                if ((x_new_max - x_new_min) > (x_max - x_min) && (y_new_max - y_new_min) > (y_max - y_min))
+                {
+                    Console.WriteLine("Day 10, Problem 1: ");
+                    for (var i = y_new_min; i <= y_new_max; i++)
+                    {
+                        for (var j = x_new_min; j <= x_new_max; j++)
+                        {
+                            Console.Write(last.Any(x => x.y == i && x.x == j) ? '#' : '.');
+                        }
+                        Console.WriteLine();
+                    }
+                    Console.WriteLine("Day 10, Problem 2: " + (t - 1).ToString());
+                    break;
+                }
+                x_min = x_new_max;
+                x_max = x_new_max;
+                y_min = y_new_min;
+                y_max = y_new_max;
+            }
+        }
+
+        /// <summary>
+        /// Helper class for Day 10.
+        /// </summary>
+        private class Point
+        {
+            public int x
+            { get; set; }
+            public int y
+            { get; set; }
+            public Point(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
         }
 
         /// <summary>
@@ -649,7 +839,7 @@ namespace AdventCalendar
         static void Problem11(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 11, Problem 1: ");
             Console.WriteLine("Day 11, Problem 2: ");
         }
@@ -661,7 +851,7 @@ namespace AdventCalendar
         static void Problem12(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 12, Problem 1: ");
             Console.WriteLine("Day 12, Problem 2: ");
         }
@@ -673,7 +863,7 @@ namespace AdventCalendar
         static void Problem13(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 13, Problem 1: ");
             Console.WriteLine("Day 13, Problem 2: ");
         }
@@ -685,7 +875,7 @@ namespace AdventCalendar
         static void Problem14(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 14, Problem 1: ");
             Console.WriteLine("Day 14, Problem 2: ");
         }
@@ -697,7 +887,7 @@ namespace AdventCalendar
         static void Problem15(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 15, Problem 1: ");
             Console.WriteLine("Day 15, Problem 2: ");
         }
@@ -709,7 +899,7 @@ namespace AdventCalendar
         static void Problem16(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 16, Problem 1: ");
             Console.WriteLine("Day 16, Problem 2: ");
         }
@@ -721,7 +911,7 @@ namespace AdventCalendar
         static void Problem17(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 17, Problem 1: ");
             Console.WriteLine("Day 17, Problem 2: ");
         }
@@ -733,7 +923,7 @@ namespace AdventCalendar
         static void Problem18(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 18, Problem 1: ");
             Console.WriteLine("Day 18, Problem 2: ");
         }
@@ -745,7 +935,7 @@ namespace AdventCalendar
         static void Problem19(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 19, Problem 1: ");
             Console.WriteLine("Day 19, Problem 2: ");
         }
@@ -757,7 +947,7 @@ namespace AdventCalendar
         static void Problem20(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 20, Problem 1: ");
             Console.WriteLine("Day 20, Problem 2: ");
         }
@@ -769,7 +959,7 @@ namespace AdventCalendar
         static void Problem21(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 21, Problem 1: ");
             Console.WriteLine("Day 21, Problem 2: ");
         }
@@ -781,7 +971,7 @@ namespace AdventCalendar
         static void Problem22(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 22, Problem 1: ");
             Console.WriteLine("Day 22, Problem 2: ");
         }
@@ -793,7 +983,7 @@ namespace AdventCalendar
         static void Problem23(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 23, Problem 1: ");
             Console.WriteLine("Day 23, Problem 2: ");
         }
@@ -805,7 +995,7 @@ namespace AdventCalendar
         static void Problem24(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 24, Problem 1: ");
             Console.WriteLine("Day 24, Problem 2: ");
         }
@@ -817,7 +1007,7 @@ namespace AdventCalendar
         static void Problem25(string __input)
         {
             var line = File.ReadAllLines(__input);
-
+            char[] delims = { ' ' };
             Console.WriteLine("Day 25, Problem 1: ");
             Console.WriteLine("Day 25, Problem 2: ");
         }
