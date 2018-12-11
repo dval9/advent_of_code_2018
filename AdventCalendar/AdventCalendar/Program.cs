@@ -20,8 +20,8 @@ namespace AdventCalendar
             //Problem7(@"..\..\problem7.txt");
             //Problem8(@"../../problem8.txt");
             //Problem9(@"..\..\problem9.txt");
-            Problem10(@"..\..\problem10.txt");
-            Problem11(@"..\..\problem11.txt");
+            //Problem10(@"..\..\problem10.txt");
+            //Problem11(@"..\..\problem11.txt");
             Problem12(@"..\..\problem12.txt");
             Problem13(@"..\..\problem13.txt");
             Problem14(@"..\..\problem14.txt");
@@ -840,8 +840,75 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
-            Console.WriteLine("Day 11, Problem 1: ");
-            Console.WriteLine("Day 11, Problem 2: ");
+            int serial = int.Parse(line[0]);
+            int grid_size = 300;
+            int[,] grid = new int[300, 300];
+
+            for (int i = 1; i < grid_size; i++)
+            {
+                for (int j = 1; j < grid_size; j++)
+                {
+                    var rack_id = i + 10;
+                    var power = rack_id * j;
+                    power += serial;
+                    power *= rack_id;
+                    power = int.Parse(power.ToString().Substring(power.ToString().Length - 3, 1));
+                    power -= 5;
+                    grid[i - 1, j - 1] = power;
+                }
+            }
+
+            int max = 0;
+            string max_pos = "";
+            var size = 3;
+            for (int i = 0; i < grid_size - size; i++)
+            {
+                for (int j = 0; j < grid_size - size; j++)
+                {
+                    var val = 0;
+                    for (int x = 0; x < size; x++)
+                    {
+                        for (int y = 0; y < size; y++)
+                        {
+                            val += grid[i + x, j + y];
+                        }
+                    }
+
+                    if (val > max)
+                    {
+                        max = val;
+                        max_pos = (i + 1).ToString() + "," + (j + 1).ToString();
+                    }
+                }
+            }
+
+            Console.WriteLine("Day 11, Problem 1: " + max_pos);
+
+            for (size = 1; size <= 20; size++)//doesnt actually need to run to 300, takes forever if it trys
+            {
+                for (int i = 0; i < grid_size - size; i++)
+                {
+                    for (int j = 0; j < grid_size - size; j++)
+                    {
+                        var val = 0;
+                        for (int x = 0; x < size; x++)
+                        {
+                            for (int y = 0; y < size; y++)
+                            {
+                                val += grid[i + x, j + y];
+                            }
+                        }
+
+                        if (val > max)
+                        {
+                            max = val;
+                            max_pos = (i + 1).ToString() + "," + (j + 1).ToString() + "," + size.ToString();
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine("Day 11, Problem 2: " + max_pos);
         }
 
         /// <summary>
