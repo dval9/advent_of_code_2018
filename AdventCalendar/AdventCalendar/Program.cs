@@ -22,7 +22,7 @@ namespace AdventCalendar
             //Problem9(@"..\..\problem9.txt");
             //Problem10(@"..\..\problem10.txt");
             //Problem11(@"..\..\problem11.txt");
-            Problem12(@"..\..\problem12.txt");
+            //Problem12(@"..\..\problem12.txt");
             Problem13(@"..\..\problem13.txt");
             Problem14(@"..\..\problem14.txt");
             Problem15(@"..\..\problem15.txt");
@@ -634,7 +634,7 @@ namespace AdventCalendar
                     children.Push(int.Parse(nodes[i++]));
                     metadata.Push(int.Parse(nodes[i++]));
                     var c = new Problem8_Node(n);
-                    n.children.Add(c);
+                    n.Children.Add(c);
                     n = c;
                 }
                 if (children.Peek() == 0)
@@ -645,13 +645,13 @@ namespace AdventCalendar
                     for (int j = 0; j < m_count; j++)
                     {
                         v += int.Parse(nodes[i + j]);
-                        n.metadata.Add(int.Parse(nodes[i + j]));
+                        n.Metadata.Add(int.Parse(nodes[i + j]));
                     }
                     total += v;
-                    if (n.children.Count == 0)
-                        n.value += v;
+                    if (n.Children.Count == 0)
+                        n.Value += v;
                     i += m_count;
-                    n = n.parent;
+                    n = n.Parent;
                 }
             }
 
@@ -665,29 +665,29 @@ namespace AdventCalendar
         /// </summary>
         private class Problem8_Node
         {
-            public List<Problem8_Node> children { get; set; }
-            public List<int> metadata { get; set; }
-            public Problem8_Node parent { get; set; }
-            public int value { get; set; }
+            public List<Problem8_Node> Children { get; set; }
+            public List<int> Metadata { get; set; }
+            public Problem8_Node Parent { get; set; }
+            public int Value { get; set; }
             public Problem8_Node(Problem8_Node parent)
             {
-                children = new List<Problem8_Node>();
-                metadata = new List<int>();
-                value = 0;
-                this.parent = parent;
+                Children = new List<Problem8_Node>();
+                Metadata = new List<int>();
+                Value = 0;
+                this.Parent = parent;
             }
 
             public int CalcValue()
             {
                 var v = 0;
-                if (children.Count == 0)
-                    v = value;
+                if (Children.Count == 0)
+                    v = Value;
                 else
                 {
-                    foreach (var m in metadata)
-                        if (m <= children.Count)
-                            v += children[m - 1].CalcValue();
-                    value = v;
+                    foreach (var m in Metadata)
+                        if (m <= Children.Count)
+                            v += Children[m - 1].CalcValue();
+                    Value = v;
                 }
                 return v;
             }
@@ -777,24 +777,24 @@ namespace AdventCalendar
                 v.Add(new Point(int.Parse(s[4]), int.Parse(s[5])));
             }
 
-            int x_min = p.Min(x => x.x);
-            int x_max = p.Max(x => x.x);
-            int y_min = p.Min(x => x.y);
-            int y_max = p.Max(x => x.y);
+            int x_min = p.Min(x => x.X);
+            int x_max = p.Max(x => x.X);
+            int y_min = p.Min(x => x.Y);
+            int y_max = p.Max(x => x.Y);
 
             for (int t = 1; ; t++)
             {
-                var last = p.Select(x => new Point(x.x, x.y)).ToList();
+                var last = p.Select(x => new Point(x.X, x.Y)).ToList();
                 for (int i = 0; i < p.Count; i++)
                 {
-                    p[i].x += v[i].x;
-                    p[i].y += v[i].y;
+                    p[i].X += v[i].X;
+                    p[i].Y += v[i].Y;
                 }
 
-                var x_new_min = p.Min(x => x.x);
-                var x_new_max = p.Max(x => x.x);
-                var y_new_min = p.Min(x => x.y);
-                var y_new_max = p.Max(x => x.y);
+                var x_new_min = p.Min(x => x.X);
+                var x_new_max = p.Max(x => x.X);
+                var y_new_min = p.Min(x => x.Y);
+                var y_new_max = p.Max(x => x.Y);
                 if ((x_new_max - x_new_min) > (x_max - x_min) && (y_new_max - y_new_min) > (y_max - y_min))
                 {
                     Console.WriteLine("Day 10, Problem 1: ");
@@ -802,7 +802,7 @@ namespace AdventCalendar
                     {
                         for (var j = x_new_min; j <= x_new_max; j++)
                         {
-                            Console.Write(last.Any(x => x.y == i && x.x == j) ? '#' : '.');
+                            Console.Write(last.Any(x => x.Y == i && x.X == j) ? '#' : '.');
                         }
                         Console.WriteLine();
                     }
@@ -821,14 +821,14 @@ namespace AdventCalendar
         /// </summary>
         private class Point
         {
-            public int x
+            public int X
             { get; set; }
-            public int y
+            public int Y
             { get; set; }
             public Point(int x, int y)
             {
-                this.x = x;
-                this.y = y;
+                this.X = x;
+                this.Y = y;
             }
         }
 
@@ -919,8 +919,56 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
-            Console.WriteLine("Day 12, Problem 1: ");
-            Console.WriteLine("Day 12, Problem 2: ");
+            int start = -5;
+            string gen = "....." + line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries)[2] + ".....";
+
+
+            Dictionary<string, string> rules = new Dictionary<string, string>();
+            for (int i = 2; i < line.Length; i++)
+            {
+                var l = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                rules.Add(l[0], l[2]);
+            }
+
+            //Console.WriteLine("0: " + gen);
+
+            int gen_20 = 0;
+            long last_gen = 0;
+            for (long i = 1; i <= 1000; i++)
+            {
+                var new_gen = "";
+                for (int j = 2; j < gen.Length - 2; j++)
+                {
+                    var p = gen.Substring(j - 2, 5);
+                    if (rules.ContainsKey(p))
+                        new_gen += rules[p];
+                    else
+                        new_gen += ".";
+                }
+                var t = new_gen.Split(new char[] { '#' });
+                new_gen = new_gen.Remove(0, t[0].Count());
+                new_gen = new_gen.Remove(new_gen.Length - t[t.Length - 1].Count(), t[t.Length - 1].Count());
+                gen = "....." + new_gen + ".....";
+                start = start + 2 + t[0].Count() - 5;
+
+                int plant = 0;
+                var s = start;
+                foreach (var c in gen.ToCharArray())
+                {
+                    if (c.Equals('#'))
+                        plant += start;
+                    start++;
+                }
+                start = s;
+                if (i == 20)
+                    gen_20 = plant;
+                //Console.WriteLine(i.ToString() + ":" + (plant - last_gen).ToString());
+                last_gen = plant;
+            }
+            last_gen = last_gen + 59 * (50000000000 - 1000);
+
+            Console.WriteLine("Day 12, Problem 1: " + gen_20.ToString());
+            Console.WriteLine("Day 12, Problem 2: " + last_gen.ToString());
         }
 
         /// <summary>
