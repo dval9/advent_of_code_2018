@@ -979,8 +979,219 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
-            Console.WriteLine("Day 13, Problem 1: ");
-            Console.WriteLine("Day 13, Problem 2: ");
+
+            List<List<char>> track = new List<List<char>>();
+            foreach (var l in line)
+                track.Add(l.ToList());
+
+            string crash = "";
+            List<Cart> carts = new List<Cart>();
+            int num_carts = 0;
+            for (int i = 0; i < track.Count; i++)
+            {
+                for (int j = 0; j < track[0].Count; j++)
+                {
+                    switch (track[i][j])
+                    {
+                        case '>':
+                            carts.Add(new Cart(j, i, '>', num_carts++));
+                            track[i][j] = '-';
+                            break;
+                        case 'v':
+                            carts.Add(new Cart(j, i, 'v', num_carts++));
+                            track[i][j] = '|';
+                            break;
+                        case '<':
+                            carts.Add(new Cart(j, i, '<', num_carts++));
+                            track[i][j] = '-';
+                            break;
+                        case '^':
+                            carts.Add(new Cart(j, i, '^', num_carts++));
+                            track[i][j] = '|';
+                            break;
+                    }
+                }
+            }
+
+            int rem = carts.Count;
+            while (rem > 1)
+            {
+                carts = carts.OrderBy(c => c.X).ThenBy(c => c.Y).ToList();
+                foreach (var c in carts)
+                {
+                    if (c.Crashed == true)
+                        continue;
+                    switch (c.Dir)
+                    {
+                        case '>':
+                            c.X++;
+                            switch (track[c.Y][c.X])
+                            {
+                                case '-':
+                                    break;
+                                case '|':
+                                    break;
+                                case '\\':
+                                    c.Dir = 'v';
+                                    break;
+                                case '/':
+                                    c.Dir = '^';
+                                    break;
+                                case '+':
+                                    switch (c.Turn)
+                                    {
+                                        case 0:
+                                            c.Dir = '^';
+                                            break;
+                                        case 1:
+                                            c.Dir = '>';
+                                            break;
+                                        case 2:
+                                            c.Dir = 'v';
+                                            break;
+                                    }
+                                    c.Turn = (c.Turn + 1) % 3;
+                                    break;
+                            }
+                            break;
+                        case 'v':
+                            c.Y++;
+                            switch (track[c.Y][c.X])
+                            {
+                                case '-':
+                                    break;
+                                case '|':
+                                    break;
+                                case '\\':
+                                    c.Dir = '>';
+                                    break;
+                                case '/':
+                                    c.Dir = '<';
+                                    break;
+                                case '+':
+                                    switch (c.Turn)
+                                    {
+                                        case 0:
+                                            c.Dir = '>';
+                                            break;
+                                        case 1:
+                                            c.Dir = 'v';
+                                            break;
+                                        case 2:
+                                            c.Dir = '<';
+                                            break;
+                                    }
+                                    c.Turn = (c.Turn + 1) % 3;
+                                    break;
+                            }
+                            break;
+                        case '<':
+                            c.X--;
+                            switch (track[c.Y][c.X])
+                            {
+                                case '-':
+                                    break;
+                                case '|':
+                                    break;
+                                case '\\':
+                                    c.Dir = '^';
+                                    break;
+                                case '/':
+                                    c.Dir = 'v';
+                                    break;
+                                case '+':
+                                    switch (c.Turn)
+                                    {
+                                        case 0:
+                                            c.Dir = 'v';
+                                            break;
+                                        case 1:
+                                            c.Dir = '<';
+                                            break;
+                                        case 2:
+                                            c.Dir = '^';
+                                            break;
+                                    }
+                                    c.Turn = (c.Turn + 1) % 3;
+                                    break;
+                            }
+                            break;
+                        case '^':
+                            c.Y--;
+                            switch (track[c.Y][c.X])
+                            {
+                                case '-':
+                                    break;
+                                case '|':
+                                    break;
+                                case '\\':
+                                    c.Dir = '<';
+                                    break;
+                                case '/':
+                                    c.Dir = '>';
+                                    break;
+                                case '+':
+                                    switch (c.Turn)
+                                    {
+                                        case 0:
+                                            c.Dir = '<';
+                                            break;
+                                        case 1:
+                                            c.Dir = '^';
+                                            break;
+                                        case 2:
+                                            c.Dir = '>';
+                                            break;
+                                    }
+                                    c.Turn = (c.Turn + 1) % 3;
+                                    break;
+                            }
+                            break;
+                    }
+                    var collisions = carts.Where(cart => cart.X == c.X && cart.Y == c.Y && cart.Number != c.Number && cart.Crashed == false);
+                    if (collisions.Count() != 0)
+                    {
+                        if (crash.Equals(""))
+                            crash = c.X.ToString() + "," + c.Y.ToString();
+                        c.Crashed = true;
+                        collisions.ElementAt(0).Crashed = true;
+                        rem -= 2;
+                    }
+                }
+            }
+            Cart uncrash = carts.Find(c => c.Crashed == false);
+
+            Console.WriteLine("Day 13, Problem 1: " + crash);
+            Console.WriteLine("Day 13, Problem 2: " + uncrash.X + "," + uncrash.Y);
+        }
+
+        /// <summary>
+        /// Helper class for day 13.
+        /// </summary>
+        private class Cart
+        {
+            public int X
+            { get; set; }
+            public int Y
+            { get; set; }
+            public int Turn
+            { get; set; }
+            public char Dir
+            { get; set; }
+            public int Number
+            { get; set; }
+            public bool Crashed
+            { get; set; }
+            public Cart(int x, int y, char dir, int num)
+            {
+                X = x;
+                Y = y;
+                Turn = 0;
+                Dir = dir;
+                Number = num;
+                Crashed = false;
+            }
+
         }
 
         /// <summary>
