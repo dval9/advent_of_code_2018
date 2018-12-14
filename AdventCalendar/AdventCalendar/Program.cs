@@ -23,7 +23,8 @@ namespace AdventCalendar
             //Problem10(@"..\..\problem10.txt");
             //Problem11(@"..\..\problem11.txt");
             //Problem12(@"..\..\problem12.txt");
-            Problem13(@"..\..\problem13.txt");
+            //Problem13(@"..\..\problem13.txt");
+            Day14Part2();
             Problem14(@"..\..\problem14.txt");
             Problem15(@"..\..\problem15.txt");
             Problem16(@"..\..\problem16.txt");
@@ -1201,10 +1202,105 @@ namespace AdventCalendar
         static void Problem14(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 14, Problem 1: ");
-            Console.WriteLine("Day 14, Problem 2: ");
+            var scores = "";
+            var r_count = int.Parse(line[0]);
+            var recepies = new List<int> { 3, 7 };
+            var elf1 = 0;
+            var elf2 = 1;
+
+            while (recepies.Count < r_count + 10)
+            {
+                var r = recepies[elf1] + recepies[elf2];
+                if (r >= 10)
+                {
+                    recepies.Add(r / 10);
+                    recepies.Add(r % 10);
+                }
+                else
+                    recepies.Add(r);
+
+                elf1 = (elf1 + 1 + recepies[elf1]) % recepies.Count;
+                elf2 = (elf2 + 1 + recepies[elf2]) % recepies.Count;
+
+            }
+
+            scores = string.Join("", recepies);
+
+            var found = scores.Contains(r_count.ToString());
+            int i = 0;
+            int offset = 0;
+            while (!found)
+            {
+                var r = recepies[elf1] + recepies[elf2];
+                if (r >= 10)
+                {
+                    recepies.Add(r / 10);
+                    recepies.Add(r % 10);
+                }
+                else
+                    recepies.Add(r);
+
+                elf1 = (elf1 + 1 + recepies[elf1]) % recepies.Count;
+                elf2 = (elf2 + 1 + recepies[elf2]) % recepies.Count;
+
+                if (r_count.ToString()[offset] == recepies[i + offset])
+                {
+                    if (offset == (r_count.ToString().Length - 1))
+                    {
+                        found = true;
+                        break;
+                    }
+                    offset++;
+
+                }
+                else
+                {
+                    offset = 0;
+                    i++;
+                }
+
+                found = true;
+            }
+
+            Console.WriteLine("Day 14, Problem 1: " + scores.Substring(r_count, 10));
+            Console.WriteLine("Day 14, Problem 2: " + i);
         }
+
+        public static void Day14Part2()
+        {
+            int[] numbersToCheck = new int[] { 2, 0, 1, 8 };
+            int index = 0;
+            int positionToCheck = 0;
+            bool notFound = true;
+            List<int> numbers = new List<int> { 3, 7 };
+
+            while (notFound)
+            {
+
+
+                while (index + positionToCheck < numbers.Count)
+                {
+                    if (numbersToCheck[positionToCheck] == numbers[index + positionToCheck])
+                    {
+                        if (positionToCheck == numbersToCheck.Length - 1)
+                        {
+                            notFound = false;
+                            break;
+                        }
+                        positionToCheck++;
+                    }
+                    else
+                    {
+                        positionToCheck = 0;
+                        index++;
+                    }
+                }
+            }
+
+            Console.WriteLine(index.ToString());
+        }
+
+
 
         /// <summary>
         /// DAY 15
