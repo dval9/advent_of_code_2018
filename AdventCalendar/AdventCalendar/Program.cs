@@ -24,7 +24,6 @@ namespace AdventCalendar
             //Problem11(@"..\..\problem11.txt");
             //Problem12(@"..\..\problem12.txt");
             //Problem13(@"..\..\problem13.txt");
-            Day14Part2();
             Problem14(@"..\..\problem14.txt");
             Problem15(@"..\..\problem15.txt");
             Problem16(@"..\..\problem16.txt");
@@ -1243,23 +1242,23 @@ namespace AdventCalendar
                 elf1 = (elf1 + 1 + recepies[elf1]) % recepies.Count;
                 elf2 = (elf2 + 1 + recepies[elf2]) % recepies.Count;
 
-                if (r_count.ToString()[offset] == recepies[i + offset])
+                while (i + offset < recepies.Count)
                 {
-                    if (offset == (r_count.ToString().Length - 1))
+                    if (int.Parse(r_count.ToString()[offset].ToString()) == (recepies[i + offset]))
                     {
-                        found = true;
-                        break;
+                        if (offset == (5))
+                        {
+                            found = true;
+                            break;
+                        }
+                        offset++;
                     }
-                    offset++;
-
+                    else
+                    {
+                        offset = 0;
+                        i++;
+                    }
                 }
-                else
-                {
-                    offset = 0;
-                    i++;
-                }
-
-                found = true;
             }
 
             Console.WriteLine("Day 14, Problem 1: " + scores.Substring(r_count, 10));
