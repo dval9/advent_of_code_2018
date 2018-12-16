@@ -24,7 +24,7 @@ namespace AdventCalendar
             //Problem11(@"..\..\problem11.txt");
             //Problem12(@"..\..\problem12.txt");
             //Problem13(@"..\..\problem13.txt");
-            Problem14(@"..\..\problem14.txt");
+            //Problem14(@"..\..\problem14.txt");
             Problem15(@"..\..\problem15.txt");
             Problem16(@"..\..\problem16.txt");
             Problem17(@"..\..\problem17.txt");
@@ -1264,42 +1264,6 @@ namespace AdventCalendar
             Console.WriteLine("Day 14, Problem 1: " + scores.Substring(r_count, 10));
             Console.WriteLine("Day 14, Problem 2: " + i);
         }
-
-        public static void Day14Part2()
-        {
-            int[] numbersToCheck = new int[] { 2, 0, 1, 8 };
-            int index = 0;
-            int positionToCheck = 0;
-            bool notFound = true;
-            List<int> numbers = new List<int> { 3, 7 };
-
-            while (notFound)
-            {
-
-
-                while (index + positionToCheck < numbers.Count)
-                {
-                    if (numbersToCheck[positionToCheck] == numbers[index + positionToCheck])
-                    {
-                        if (positionToCheck == numbersToCheck.Length - 1)
-                        {
-                            notFound = false;
-                            break;
-                        }
-                        positionToCheck++;
-                    }
-                    else
-                    {
-                        positionToCheck = 0;
-                        index++;
-                    }
-                }
-            }
-
-            Console.WriteLine(index.ToString());
-        }
-
-
 
         /// <summary>
         /// DAY 15
