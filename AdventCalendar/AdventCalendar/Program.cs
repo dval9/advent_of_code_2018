@@ -1380,10 +1380,25 @@ namespace AdventCalendar
                     while (fill.Peek().X == c.X)
                         fill.Pop();
                 }
+                else if (ug[c.Y + 1, c.X].Equals('|'))
+                {
+                    ug[c.Y, c.X] = '|';
+                    while (fill.Peek().X == c.X)
+                        fill.Pop();
+                }
                 else if (ug[c.Y + 1, c.X].Equals('.'))
                 {
                     ug[c.Y, c.X] = '|';
                     fill.Push(new Point(c.X, c.Y));
+                    Console.Write("  012345678901\n");
+                    for (int i = 0; i < max_y - min_y + 1; i++)
+                    {
+                        Console.Write((i).ToString() + " ");
+                        for (int j = 0; j < max_x - min_x + 1; j++)
+                            Console.Write(ug[i, j]);
+                        Console.Write('\n');
+                    }
+                    Console.WriteLine();
                     fill.Push(new Point(c.X, c.Y + 1));
                 }
                 else
