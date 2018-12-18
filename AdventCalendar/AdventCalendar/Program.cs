@@ -1296,8 +1296,157 @@ namespace AdventCalendar
         static void Problem17(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 17, Problem 1: ");
+            char[] delims = { '=', ',', ' ', '.' };
+            var min_x = int.MaxValue;
+            var max_x = 0;
+            var min_y = int.MaxValue;
+            var max_y = 0;
+
+            foreach (var l in line)
+            {
+                var s = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (s[0].Equals("x"))
+                {
+                    if (int.Parse(s[1]) < min_x)
+                        min_x = int.Parse(s[1]);
+                    if (int.Parse(s[1]) > max_x)
+                        max_x = int.Parse(s[1]);
+                    if (int.Parse(s[3]) < min_y)
+                        min_y = int.Parse(s[3]);
+                    if (int.Parse(s[4]) > max_y)
+                        max_y = int.Parse(s[4]);
+                }
+                else
+                {
+                    if (int.Parse(s[1]) < min_y)
+                        min_y = int.Parse(s[1]);
+                    if (int.Parse(s[1]) > max_y)
+                        max_y = int.Parse(s[1]);
+                    if (int.Parse(s[3]) < min_x)
+                        min_x = int.Parse(s[3]);
+                    if (int.Parse(s[4]) > max_x)
+                        max_x = int.Parse(s[4]);
+                }
+            }
+
+            var y = max_y - min_y;
+            var x = max_x - min_x;
+            char[,] ug = new char[y + 1, x + 1];
+            for (int i = 0; i < y + 1; i++)
+                for (int j = 0; j < x + 1; j++)
+                    ug[i, j] = '.';
+
+            foreach (var l in line)
+            {
+                var s = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (s[0].Equals("x"))
+                {
+                    x = int.Parse(s[1]) - min_x;
+                    for (int i = int.Parse(s[3]) - min_y; i <= int.Parse(s[4]) - min_y; i++)
+                    {
+                        ug[i, x] = '#';
+                    }
+                }
+                else
+                {
+                    y = int.Parse(s[1]) - min_y;
+                    for (int i = int.Parse(s[3]) - min_x; i <= int.Parse(s[4]) - min_x; i++)
+                    {
+                        ug[y, i] = '#';
+                    }
+                }
+            }
+
+            var source = new Point((max_x - min_x) / 2, 0);
+            var c = new Point(source.X, source.Y);
+            Stack<Point> fill = new Stack<Point>();
+            fill.Push(c);
+            while (fill.Count != 0)
+            {
+                //Console.Write("  012345678901\n");
+                //for (int i = 0; i < max_y - min_y + 1; i++)
+                //{
+                //    Console.Write((i % 10).ToString() + " ");
+                //    for (int j = 0; j < max_x - min_x + 1; j++)
+                //        Console.Write(ug[i, j]);
+                //    Console.Write('\n');
+                //}
+                //Console.WriteLine();
+
+                c = fill.Pop();
+                if (c.Y + 1 > max_y - min_y)
+                {
+                    ug[c.Y, c.X] = '|';
+                    while (fill.Peek().X == c.X)
+                        fill.Pop();
+                }
+                else if (ug[c.Y + 1, c.X].Equals('.'))
+                {
+                    ug[c.Y, c.X] = '|';
+                    fill.Push(new Point(c.X, c.Y));
+                    fill.Push(new Point(c.X, c.Y + 1));
+                }
+                else
+                {
+                    var flood = true;
+                    var left = 0;
+                    var right = max_x - min_x;
+                    for (int i = c.X; i >= 0; i--)
+                    {
+                        if (ug[c.Y, i].Equals('#'))
+                        {
+                            left = i;
+                            break;
+                        }
+                    }
+                    for (int i = c.X; i <= max_x - min_x; i++)
+                    {
+                        if (ug[c.Y, i].Equals('#'))
+                        {
+                            right = i;
+                            break;
+                        }
+                    }
+                    for (int i = left + 1; i < right; i++)
+                    {
+                        if (!(ug[c.Y + 1, i].Equals('#') || ug[c.Y + 1, i].Equals('~')))
+                        {
+                            flood = false;
+                            if (i > c.X)
+                                right = i + 1;
+                            if (i < c.X)
+                                left = i - 1;
+                        }
+                    }
+                    if (flood)
+                    {
+                        for (int i = left + 1; i < right; i++)
+                            ug[c.Y, i] = '~';
+                    }
+                    else
+                    {
+                        if (!ug[c.Y + 1, c.X].Equals('|'))
+                        {
+                            for (int i = left + 1; i < right; i++)
+                            {
+                                if (!ug[c.Y, i].Equals('|'))
+                                {
+                                    ug[c.Y, i] = '|';
+                                    fill.Push(new Point(i, c.Y));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            var water = 0;
+            for (int i = 0; i < max_y - min_y + 1; i++)
+                for (int j = 0; j < max_x - min_x + 1; j++)
+                    if (ug[i, j].Equals('~') || ug[i, j].Equals('|'))
+                        water++;
+
+            Console.WriteLine("Day 17, Problem 1: " + water);
             Console.WriteLine("Day 17, Problem 2: ");
         }
 
