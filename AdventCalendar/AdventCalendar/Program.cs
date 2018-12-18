@@ -1308,9 +1308,188 @@ namespace AdventCalendar
         static void Problem18(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 18, Problem 1: ");
-            Console.WriteLine("Day 18, Problem 2: ");
+            List<List<char>> forest = new List<List<char>>();
+            foreach (var l in line)
+                forest.Add(l.ToList());
+
+            List<List<char>> new_forest = new List<List<char>>();
+            forest.ForEach(f => new_forest.Add(f.ToList()));
+
+            List<int> lumber_list = new List<int>();
+
+            var trees = 0;
+            var lumber = 0;
+            var empty = 0;
+            for (int m = 0; m < 1000; m++)
+            {
+                for (int i = 0; i < forest.Count; i++)
+                {
+                    for (int j = 0; j < forest[i].Count; j++)
+                    {
+                        trees = 0;
+                        lumber = 0;
+                        empty = 0;
+                        if (i - 1 >= 0 && j - 1 >= 0)
+                        {
+                            switch (forest[i - 1][j - 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (i - 1 >= 0)
+                        {
+                            switch (forest[i - 1][j])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (i - 1 >= 0 && j + 1 < forest[i].Count)
+                        {
+                            switch (forest[i - 1][j + 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (j - 1 >= 0)
+                        {
+                            switch (forest[i][j - 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (j + 1 < forest[i].Count)
+                        {
+                            switch (forest[i][j + 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (i + 1 < forest.Count && j - 1 >= 0)
+                        {
+                            switch (forest[i + 1][j - 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (i + 1 < forest.Count)
+                        {
+                            switch (forest[i + 1][j])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (i + 1 < forest.Count && j + 1 < forest[i].Count)
+                        {
+                            switch (forest[i + 1][j + 1])
+                            {
+                                case '.':
+                                    empty++;
+                                    break;
+                                case '#':
+                                    lumber++;
+                                    break;
+                                case '|':
+                                    trees++;
+                                    break;
+                            }
+                        }
+                        if (forest[i][j].Equals('.') && trees >= 3)
+                            new_forest[i][j] = '|';
+                        if (forest[i][j].Equals('|') && lumber >= 3)
+                            new_forest[i][j] = '#';
+                        if (forest[i][j].Equals('#') && (lumber == 0 || trees == 0))
+                            new_forest[i][j] = '.';
+                    }
+                }
+
+                forest = new List<List<char>>();
+                new_forest.ForEach(f => forest.Add(f.ToList()));
+
+                trees = 0;
+                lumber = 0;
+                empty = 0;
+                for (int i = 0; i < forest.Count; i++)
+                {
+                    for (int j = 0; j < forest[i].Count; j++)
+                    {
+                        switch (forest[i][j])
+                        {
+                            case '.':
+                                empty++;
+                                break;
+                            case '#':
+                                lumber++;
+                                break;
+                            case '|':
+                                trees++;
+                                break;
+                        }
+                    }
+                }
+                lumber_list.Add(trees * lumber);
+            }
+
+            Console.WriteLine("Day 18, Problem 1: " + lumber_list[9].ToString());
+            var time = 1000000000;
+            while (time >= 1000)
+                time -= 28;
+            Console.WriteLine("Day 18, Problem 2: " + lumber_list[time - 1]);
         }
 
         /// <summary>
