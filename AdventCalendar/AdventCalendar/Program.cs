@@ -29,7 +29,7 @@ namespace AdventCalendar
             //Problem16(@"..\..\problem16.txt");
             //Problem17(@"..\..\problem17.txt");
             //Problem18(@"..\..\problem18.txt");
-            Problem19(@"..\..\problem19.txt");
+            //Problem19(@"..\..\problem19.txt");
             Problem20(@"..\..\problem20.txt");
             Problem21(@"..\..\problem21.txt");
             Problem22(@"..\..\problem22.txt");
@@ -2156,97 +2156,8 @@ namespace AdventCalendar
                 var a = int.Parse(s1[1]);
                 var b = int.Parse(s1[2]);
                 var c = int.Parse(s1[3]);
-                
-                regs[ip_reg] = ip;
-                switch (s1[0])
-                {
-                    case "eqri":
-                        //eqri
-                        regs[c] = regs[a] == b ? 1 : 0;
-                        break;
-                    case "banr":
-                        //banr
-                        regs[c] = regs[a] & regs[b];
-                        break;
-                    case "bori":
-                        //bori
-                        regs[c] = regs[a] | b;
-                        break;
-                    case "mulr":
-                        //mulr
-                        regs[c] = regs[a] * regs[b];
-                        break;
-                    case "seti":
-                        //seti
-                        regs[c] = a;
-                        break;
-                    case "bani":
-                        //bani
-                        regs[c] = regs[a] & b;
-                        break;
-                    case "muli":
-                        //muli
-                        regs[c] = regs[a] * b;
-                        break;
-                    case "gtrr":
-                        //gtrr
-                        regs[c] = regs[a] > regs[b] ? 1 : 0;
-                        break;
-                    case "setr":
-                        //setr
-                        regs[c] = regs[a];
-                        break;
-                    case "addi":
-                        //addi
-                        regs[c] = regs[a] + b;
-                        break;
-                    case "gtir":
-                        //gtir
-                        regs[c] = a > regs[b] ? 1 : 0;
-                        break;
-                    case "borr":
-                        //borr
-                        regs[c] = regs[a] | regs[b];
-                        break;
-                    case "addr":
-                        //addr
-                        regs[c] = regs[a] + regs[b];
-                        break;
-                    case "eqrr":
-                        //eqrr
-                        regs[c] = regs[a] == regs[b] ? 1 : 0;
-                        break;
-                    case "gtri":
-                        //gtri
-                        regs[c] = regs[a] > b ? 1 : 0;
-                        break;
-                    case "eqir":
-                        //eqir
-                        regs[c] = a == regs[b] ? 1 : 0;
-                        break;
-                }
-                ip = regs[ip_reg];
-                ip++;                
-            }
-            var reg0 = regs[0];
-
-            regs = new int[6];
-            ip = 0;
-            regs[0] = 1;
-            while (ip + 1 < line.Length)
-            {
-                var s1 = line[ip + 1].Split(delims, StringSplitOptions.RemoveEmptyEntries);
-                var a = int.Parse(s1[1]);
-                var b = int.Parse(s1[2]);
-                var c = int.Parse(s1[3]);
 
                 regs[ip_reg] = ip;
-
-                Console.Write("ip=" + ip.ToString() + " [");
-                foreach (var r in regs)
-                    Console.Write(r.ToString() + ", ");
-                Console.Write(line[ip + 1] + " [");
-
                 switch (s1[0])
                 {
                     case "eqri":
@@ -2316,14 +2227,96 @@ namespace AdventCalendar
                 }
                 ip = regs[ip_reg];
                 ip++;
-
-                foreach (var r in regs)
-                    Console.Write(r.ToString() + ", ");
-                Console.WriteLine();
             }
+            var reg0 = regs[0];
 
+            regs = new int[6];
+            ip = 0;
+            regs[0] = 1;
+            //the program calculates the sum of the factors of regs[1]
+            //when a == 1, b == 10551343
+            //when a == 0, b == 943
+            //while (ip + 1 < line.Length)
+            //{
+            //    var s1 = line[ip + 1].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+            //    var a = int.Parse(s1[1]);
+            //    var b = int.Parse(s1[2]);
+            //    var c = int.Parse(s1[3]);
+
+            //    regs[ip_reg] = ip;
+            //    switch (s1[0])
+            //    {
+            //        case "eqri":
+            //            //eqri
+            //            regs[c] = regs[a] == b ? 1 : 0;
+            //            break;
+            //        case "banr":
+            //            //banr
+            //            regs[c] = regs[a] & regs[b];
+            //            break;
+            //        case "bori":
+            //            //bori
+            //            regs[c] = regs[a] | b;
+            //            break;
+            //        case "mulr":
+            //            //mulr
+            //            regs[c] = regs[a] * regs[b];
+            //            break;
+            //        case "seti":
+            //            //seti
+            //            regs[c] = a;
+            //            break;
+            //        case "bani":
+            //            //bani
+            //            regs[c] = regs[a] & b;
+            //            break;
+            //        case "muli":
+            //            //muli
+            //            regs[c] = regs[a] * b;
+            //            break;
+            //        case "gtrr":
+            //            //gtrr
+            //            regs[c] = regs[a] > regs[b] ? 1 : 0;
+            //            break;
+            //        case "setr":
+            //            //setr
+            //            regs[c] = regs[a];
+            //            break;
+            //        case "addi":
+            //            //addi
+            //            regs[c] = regs[a] + b;
+            //            break;
+            //        case "gtir":
+            //            //gtir
+            //            regs[c] = a > regs[b] ? 1 : 0;
+            //            break;
+            //        case "borr":
+            //            //borr
+            //            regs[c] = regs[a] | regs[b];
+            //            break;
+            //        case "addr":
+            //            //addr
+            //            regs[c] = regs[a] + regs[b];
+            //            break;
+            //        case "eqrr":
+            //            //eqrr
+            //            regs[c] = regs[a] == regs[b] ? 1 : 0;
+            //            break;
+            //        case "gtri":
+            //            //gtri
+            //            regs[c] = regs[a] > b ? 1 : 0;
+            //            break;
+            //        case "eqir":
+            //            //eqir
+            //            regs[c] = a == regs[b] ? 1 : 0;
+            //            break;
+            //    }
+            //    ip = regs[ip_reg];
+            //    ip++;
+            //}
+            var sum = 1 + 11 + 743 + 1291 + 8173 + 14201 + 959213 + 10551343;
             Console.WriteLine("Day 19, Problem 1: " + reg0);
-            Console.WriteLine("Day 19, Problem 2: " + regs[0]);
+            Console.WriteLine("Day 19, Problem 2: " + sum);
         }
 
         /// <summary>
