@@ -1284,9 +1284,250 @@ namespace AdventCalendar
         static void Problem16(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 16, Problem 1: ");
-            Console.WriteLine("Day 16, Problem 2: ");
+            char[] delims = { ' ', ',', '[', ']' };
+
+            int[] regs = new int[4];
+            int dups = 0;
+            Dictionary<int, string> opcodes = new Dictionary<int, string>
+            {
+                { 0,"" },{ 1,"" },{ 2,"" },{ 3,"" },{ 4,"" },{ 5,"" },{ 6,"" },{ 7,"" },
+                { 8,"" },{ 9,"" },{ 10,"" },{ 11,"" },{ 12,"" },{ 13,"" },{ 14,"" },{ 15,"" }
+            };
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i].Equals(""))
+                    continue;
+                var s1 = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (s1[0].Equals("Before:"))
+                {
+                    var s2 = line[i + 1].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                    var s3 = line[i + 2].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                    var new_regs = new int[4];
+                    var count = 0;
+
+                    regs[0] = int.Parse(s1[1]);
+                    regs[1] = int.Parse(s1[2]);
+                    regs[2] = int.Parse(s1[3]);
+                    regs[3] = int.Parse(s1[4]);
+
+                    new_regs[0] = int.Parse(s3[1]);
+                    new_regs[1] = int.Parse(s3[2]);
+                    new_regs[2] = int.Parse(s3[3]);
+                    new_regs[3] = int.Parse(s3[4]);
+
+                    var ins = int.Parse(s2[0]);
+                    var a = int.Parse(s2[1]);
+                    var b = int.Parse(s2[2]);
+                    var c = int.Parse(s2[3]);
+
+                    if (new_regs[c] == (regs[a] + regs[b]))
+                    {
+                        opcodes[ins] += "addr,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] + b))
+                    {
+                        opcodes[ins] += "addi,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] * regs[b]))
+                    {
+                        opcodes[ins] += "mulr,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] * b))
+                    {
+                        opcodes[ins] += "muli,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] & regs[b]))
+                    {
+                        opcodes[ins] += "banr,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] & b))
+                    {
+                        opcodes[ins] += "bani,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] | regs[b]))
+                    {
+                        opcodes[ins] += "borr,";
+                        count++;
+                    }
+                    if (new_regs[c] == (regs[a] | b))
+                    {
+                        opcodes[ins] += "bori,";
+                        count++;
+                    }
+                    if (new_regs[c] == regs[a])
+                    {
+                        opcodes[ins] += "setr,";
+                        count++;
+                    }
+                    if (new_regs[c] == a)
+                    {
+                        opcodes[ins] += "seti,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (a > regs[b])) || (new_regs[c] == 0 && (a <= regs[b])))
+                    {
+                        opcodes[ins] += "gtir,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (regs[a] > b)) || (new_regs[c] == 0 && (regs[a] <= b)))
+                    {
+                        opcodes[ins] += "gtri,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (regs[a] > regs[b])) || (new_regs[c] == 0 && (regs[a] <= regs[b])))
+                    {
+                        opcodes[ins] += "gtrr,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (a == regs[b])) || (new_regs[c] == 0 && (a != regs[b])))
+                    {
+                        opcodes[ins] += "eqir,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (regs[a] == b)) || (new_regs[c] == 0 && (regs[a] != b)))
+                    {
+                        opcodes[ins] += "eqri,";
+                        count++;
+                    }
+                    if ((new_regs[c] == 1 && (regs[a] == regs[b])) || (new_regs[c] == 0 && (regs[a] != regs[b])))
+                    {
+                        opcodes[ins] += "eqrr,";
+                        count++;
+                    }
+
+                    if (count >= 3)
+                        dups++;
+
+                    i += 3;
+                }
+            }
+
+            Dictionary<string, int> freqs = new Dictionary<string, int>();
+            List<Dictionary<string, int>> f_list = new List<Dictionary<string, int>>();
+            foreach (var kvp in opcodes)
+            {
+                freqs = new Dictionary<string, int>();
+                var str = kvp.Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var s in str)
+                {
+                    if (freqs.ContainsKey(s))
+                        freqs[s]++;
+                    else
+                        freqs.Add(s, 1);
+                }
+
+
+                f_list.Add(freqs);
+            }
+            for (int k = 0; k < 16; k++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    if (f_list[i].Count == 1)
+                    {
+                        var rem = f_list[i].ElementAt(0).Key;
+                        for (int j = 0; j < 16; j++)
+                        {
+                            if (i != j)
+                                f_list[j].Remove(rem);
+                        }
+                    }
+                }
+            }
+
+            regs = new int[4];
+            for (int i = 0; i < line.Length; i++)
+            {
+                delims = new char[] { ' ' };
+                if (line[i].Equals(""))
+                    continue;
+                var s1 = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                if (s1[0].Equals("Before:"))
+                    i += 3;
+                else
+                {
+                    var a = int.Parse(s1[1]);
+                    var b = int.Parse(s1[2]);
+                    var c = int.Parse(s1[3]);
+                    switch (int.Parse(s1[0]))
+                    {
+                        case 0:
+                            //eqri
+                            regs[c] = regs[a] == b ? 1 : 0;
+                            break;
+                        case 1:
+                            //banr
+                            regs[c] = regs[a] & regs[b];
+                            break;
+                        case 2:
+                            //bori
+                            regs[c] = regs[a] | b;
+                            break;
+                        case 3:
+                            //mulr
+                            regs[c] = regs[a] * regs[b];
+                            break;
+                        case 4:
+                            //seti
+                            regs[c] = a;
+                            break;
+                        case 5:
+                            //bani
+                            regs[c] = regs[a] & b;
+                            break;
+                        case 6:
+                            //muli
+                            regs[c] = regs[a] * b;
+                            break;
+                        case 7:
+                            //gtrr
+                            regs[c] = regs[a] > regs[b] ? 1 : 0;
+                            break;
+                        case 8:
+                            //setr
+                            regs[c] = regs[a];
+                            break;
+                        case 9:
+                            //addi
+                            regs[c] = regs[a] + b;
+                            break;
+                        case 10:
+                            //gtir
+                            regs[c] = a > regs[b] ? 1 : 0;
+                            break;
+                        case 11:
+                            //borr
+                            regs[c] = regs[a] | regs[b];
+                            break;
+                        case 12:
+                            //addr
+                            regs[c] = regs[a] + regs[b];
+                            break;
+                        case 13:
+                            //eqrr
+                            regs[c] = regs[a] == regs[b] ? 1 : 0;
+                            break;
+                        case 14:
+                            //gtri
+                            regs[c] = regs[a] > b ? 1 : 0;
+                            break;
+                        case 15:
+                            //eqir
+                            regs[c] = a == regs[b] ? 1 : 0;
+                            break;
+                    }
+                }
+            }
+
+            Console.WriteLine("Day 16, Problem 1: " + dups);
+            Console.WriteLine("Day 16, Problem 2: " + regs[0]);
         }
 
         /// <summary>
@@ -1436,7 +1677,7 @@ namespace AdventCalendar
                     }
                 }
             }
-                       
+
             var water = 0;
             var still_water = 0;
             for (int i = 0; i < max_y - min_y + 1; i++)
