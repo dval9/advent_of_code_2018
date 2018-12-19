@@ -27,8 +27,8 @@ namespace AdventCalendar
             //Problem14(@"..\..\problem14.txt");
             Problem15(@"..\..\problem15.txt");
             Problem16(@"..\..\problem16.txt");
-            Problem17(@"..\..\problem17.txt");
-            Problem18(@"..\..\problem18.txt");
+            //Problem17(@"..\..\problem17.txt");
+            //Problem18(@"..\..\problem18.txt");
             Problem19(@"..\..\problem19.txt");
             Problem20(@"..\..\problem20.txt");
             Problem21(@"..\..\problem21.txt");
@@ -1328,7 +1328,8 @@ namespace AdventCalendar
                         max_x = int.Parse(s[4]);
                 }
             }
-
+            max_x += 2;
+            min_x -= 2;
             var y = max_y - min_y;
             var x = max_x - min_x;
             char[,] ug = new char[y + 1, x + 1];
@@ -1363,42 +1364,23 @@ namespace AdventCalendar
             fill.Push(c);
             while (fill.Count != 0)
             {
-                //Console.Write("  012345678901\n");
-                //for (int i = 0; i < max_y - min_y + 1; i++)
-                //{
-                //    Console.Write((i % 10).ToString() + " ");
-                //    for (int j = 0; j < max_x - min_x + 1; j++)
-                //        Console.Write(ug[i, j]);
-                //    Console.Write('\n');
-                //}
-                //Console.WriteLine();
-
                 c = fill.Pop();
                 if (c.Y + 1 > max_y - min_y)
                 {
                     ug[c.Y, c.X] = '|';
-                    while (fill.Peek().X == c.X)
+                    while (fill.Count > 0 && fill.Peek().X == c.X)
                         fill.Pop();
                 }
                 else if (ug[c.Y + 1, c.X].Equals('|'))
                 {
                     ug[c.Y, c.X] = '|';
-                    while (fill.Peek().X == c.X)
+                    while (fill.Count > 0 && fill.Peek().X == c.X)
                         fill.Pop();
                 }
                 else if (ug[c.Y + 1, c.X].Equals('.'))
                 {
                     ug[c.Y, c.X] = '|';
                     fill.Push(new Point(c.X, c.Y));
-                    Console.Write("  012345678901\n");
-                    for (int i = 0; i < max_y - min_y + 1; i++)
-                    {
-                        Console.Write((i).ToString() + " ");
-                        for (int j = 0; j < max_x - min_x + 1; j++)
-                            Console.Write(ug[i, j]);
-                        Console.Write('\n');
-                    }
-                    Console.WriteLine();
                     fill.Push(new Point(c.X, c.Y + 1));
                 }
                 else
@@ -1454,15 +1436,20 @@ namespace AdventCalendar
                     }
                 }
             }
-
+                       
             var water = 0;
+            var still_water = 0;
             for (int i = 0; i < max_y - min_y + 1; i++)
                 for (int j = 0; j < max_x - min_x + 1; j++)
                     if (ug[i, j].Equals('~') || ug[i, j].Equals('|'))
+                    {
+                        if (ug[i, j].Equals('~'))
+                            still_water++;
                         water++;
+                    }
 
             Console.WriteLine("Day 17, Problem 1: " + water);
-            Console.WriteLine("Day 17, Problem 2: ");
+            Console.WriteLine("Day 17, Problem 2: " + still_water);
         }
 
         /// <summary>
