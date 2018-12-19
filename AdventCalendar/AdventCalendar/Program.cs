@@ -817,7 +817,7 @@ namespace AdventCalendar
         }
 
         /// <summary>
-        /// Helper class for Day 10.
+        /// Helper class for Day 10 & others.
         /// </summary>
         private class Point
         {
@@ -1485,6 +1485,13 @@ namespace AdventCalendar
             Console.WriteLine("Day 15, Problem 2: " + score2);
         }
 
+        /// <summary>
+        /// Helper for day 15.
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="previous"></param>
+        /// <param name="n"></param>
+        /// <returns></returns>
         private static List<Point> GetPath(Point dest, Dictionary<Point, Point> previous, NPC n)
         {
             if (!previous.ContainsKey(dest))
@@ -1500,6 +1507,9 @@ namespace AdventCalendar
             return path;
         }
 
+        /// <summary>
+        /// Helper for day 15.
+        /// </summary>
         private class NPC
         {
             public int X
@@ -2137,8 +2147,183 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
-            Console.WriteLine("Day 19, Problem 1: ");
-            Console.WriteLine("Day 19, Problem 2: ");
+            int[] regs = new int[6];
+            int ip_reg = int.Parse(line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]);
+            int ip = 0;
+            while (ip + 1 < line.Length)
+            {
+                var s1 = line[ip + 1].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                var a = int.Parse(s1[1]);
+                var b = int.Parse(s1[2]);
+                var c = int.Parse(s1[3]);
+                
+                regs[ip_reg] = ip;
+                switch (s1[0])
+                {
+                    case "eqri":
+                        //eqri
+                        regs[c] = regs[a] == b ? 1 : 0;
+                        break;
+                    case "banr":
+                        //banr
+                        regs[c] = regs[a] & regs[b];
+                        break;
+                    case "bori":
+                        //bori
+                        regs[c] = regs[a] | b;
+                        break;
+                    case "mulr":
+                        //mulr
+                        regs[c] = regs[a] * regs[b];
+                        break;
+                    case "seti":
+                        //seti
+                        regs[c] = a;
+                        break;
+                    case "bani":
+                        //bani
+                        regs[c] = regs[a] & b;
+                        break;
+                    case "muli":
+                        //muli
+                        regs[c] = regs[a] * b;
+                        break;
+                    case "gtrr":
+                        //gtrr
+                        regs[c] = regs[a] > regs[b] ? 1 : 0;
+                        break;
+                    case "setr":
+                        //setr
+                        regs[c] = regs[a];
+                        break;
+                    case "addi":
+                        //addi
+                        regs[c] = regs[a] + b;
+                        break;
+                    case "gtir":
+                        //gtir
+                        regs[c] = a > regs[b] ? 1 : 0;
+                        break;
+                    case "borr":
+                        //borr
+                        regs[c] = regs[a] | regs[b];
+                        break;
+                    case "addr":
+                        //addr
+                        regs[c] = regs[a] + regs[b];
+                        break;
+                    case "eqrr":
+                        //eqrr
+                        regs[c] = regs[a] == regs[b] ? 1 : 0;
+                        break;
+                    case "gtri":
+                        //gtri
+                        regs[c] = regs[a] > b ? 1 : 0;
+                        break;
+                    case "eqir":
+                        //eqir
+                        regs[c] = a == regs[b] ? 1 : 0;
+                        break;
+                }
+                ip = regs[ip_reg];
+                ip++;                
+            }
+            var reg0 = regs[0];
+
+            regs = new int[6];
+            ip = 0;
+            regs[0] = 1;
+            while (ip + 1 < line.Length)
+            {
+                var s1 = line[ip + 1].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                var a = int.Parse(s1[1]);
+                var b = int.Parse(s1[2]);
+                var c = int.Parse(s1[3]);
+
+                regs[ip_reg] = ip;
+
+                Console.Write("ip=" + ip.ToString() + " [");
+                foreach (var r in regs)
+                    Console.Write(r.ToString() + ", ");
+                Console.Write(line[ip + 1] + " [");
+
+                switch (s1[0])
+                {
+                    case "eqri":
+                        //eqri
+                        regs[c] = regs[a] == b ? 1 : 0;
+                        break;
+                    case "banr":
+                        //banr
+                        regs[c] = regs[a] & regs[b];
+                        break;
+                    case "bori":
+                        //bori
+                        regs[c] = regs[a] | b;
+                        break;
+                    case "mulr":
+                        //mulr
+                        regs[c] = regs[a] * regs[b];
+                        break;
+                    case "seti":
+                        //seti
+                        regs[c] = a;
+                        break;
+                    case "bani":
+                        //bani
+                        regs[c] = regs[a] & b;
+                        break;
+                    case "muli":
+                        //muli
+                        regs[c] = regs[a] * b;
+                        break;
+                    case "gtrr":
+                        //gtrr
+                        regs[c] = regs[a] > regs[b] ? 1 : 0;
+                        break;
+                    case "setr":
+                        //setr
+                        regs[c] = regs[a];
+                        break;
+                    case "addi":
+                        //addi
+                        regs[c] = regs[a] + b;
+                        break;
+                    case "gtir":
+                        //gtir
+                        regs[c] = a > regs[b] ? 1 : 0;
+                        break;
+                    case "borr":
+                        //borr
+                        regs[c] = regs[a] | regs[b];
+                        break;
+                    case "addr":
+                        //addr
+                        regs[c] = regs[a] + regs[b];
+                        break;
+                    case "eqrr":
+                        //eqrr
+                        regs[c] = regs[a] == regs[b] ? 1 : 0;
+                        break;
+                    case "gtri":
+                        //gtri
+                        regs[c] = regs[a] > b ? 1 : 0;
+                        break;
+                    case "eqir":
+                        //eqir
+                        regs[c] = a == regs[b] ? 1 : 0;
+                        break;
+                }
+                ip = regs[ip_reg];
+                ip++;
+
+                foreach (var r in regs)
+                    Console.Write(r.ToString() + ", ");
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("Day 19, Problem 1: " + reg0);
+            Console.WriteLine("Day 19, Problem 2: " + regs[0]);
         }
 
         /// <summary>
