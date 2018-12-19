@@ -25,8 +25,8 @@ namespace AdventCalendar
             //Problem12(@"..\..\problem12.txt");
             //Problem13(@"..\..\problem13.txt");
             //Problem14(@"..\..\problem14.txt");
-            Problem15(@"..\..\problem15.txt");
-            Problem16(@"..\..\problem16.txt");
+            //Problem15(@"..\..\problem15.txt");
+            //Problem16(@"..\..\problem16.txt");
             //Problem17(@"..\..\problem17.txt");
             //Problem18(@"..\..\problem18.txt");
             Problem19(@"..\..\problem19.txt");
@@ -624,7 +624,7 @@ namespace AdventCalendar
 
             children.Push(int.Parse(nodes[i++]));
             metadata.Push(int.Parse(nodes[i++]));
-            var root = new Problem8_Node(null);
+            var root = new Node(null);
             var n = root;
             for (; i < nodes.Length;)
             {
@@ -633,7 +633,7 @@ namespace AdventCalendar
                     children.Push(children.Pop() - 1);
                     children.Push(int.Parse(nodes[i++]));
                     metadata.Push(int.Parse(nodes[i++]));
-                    var c = new Problem8_Node(n);
+                    var c = new Node(n);
                     n.Children.Add(c);
                     n = c;
                 }
@@ -663,18 +663,18 @@ namespace AdventCalendar
         /// <summary>
         /// Helper class for building and traversing tree for Day 8.
         /// </summary>
-        private class Problem8_Node
+        private class Node
         {
-            public List<Problem8_Node> Children { get; set; }
+            public List<Node> Children { get; set; }
             public List<int> Metadata { get; set; }
-            public Problem8_Node Parent { get; set; }
+            public Node Parent { get; set; }
             public int Value { get; set; }
-            public Problem8_Node(Problem8_Node parent)
+            public Node(Node parent)
             {
-                Children = new List<Problem8_Node>();
+                Children = new List<Node>();
                 Metadata = new List<int>();
                 Value = 0;
-                this.Parent = parent;
+                Parent = parent;
             }
 
             public int CalcValue()
@@ -825,10 +825,29 @@ namespace AdventCalendar
             { get; set; }
             public int Y
             { get; set; }
+            public List<Point> Path
+            { get; set; }
             public Point(int x, int y)
             {
-                this.X = x;
-                this.Y = y;
+                X = x;
+                Y = y;
+            }
+            public Point(int x, int y, List<Point> path)
+            {
+                X = x;
+                Y = y;
+                Path = path;
+            }
+
+            public override bool Equals(object obj)
+            {
+                Point p = (Point)obj;
+                return (X == p.X) && (Y == p.Y);
+            }
+
+            public override int GetHashCode()
+            {
+                return (X << 2) ^ Y;
             }
         }
 
@@ -1191,7 +1210,6 @@ namespace AdventCalendar
                 Number = num;
                 Crashed = false;
             }
-
         }
 
         /// <summary>
@@ -1273,8 +1291,235 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
-            Console.WriteLine("Day 15, Problem 1: ");
-            Console.WriteLine("Day 15, Problem 2: ");
+            List<List<char>> map = new List<List<char>>();
+            foreach (var l in line)
+                map.Add(l.ToList());
+
+            List<NPC> npcs = new List<NPC>();
+            List<Point> dirs = new List<Point>
+            {
+                new Point(0,-1),
+                new Point(-1,0),
+                new Point(1,0),
+                new Point(0,1)
+            };
+
+            for (int i = 0; i < map.Count; i++)
+            {
+                for (int j = 0; j < map[0].Count; j++)
+                {
+                    if (map[i][j].Equals('E'))
+                    {
+                        map[i][j] = '.';
+                        npcs.Add(new NPC(j, i, 'E', 200, 3));
+                    }
+                    if (map[i][j].Equals('G'))
+                    {
+                        map[i][j] = '.';
+                        npcs.Add(new NPC(j, i, 'G', 200, 3));
+                    }
+                }
+            }
+            List<NPC> orig = npcs.Select(x => new NPC(x.X, x.Y, x.Type, x.HP, x.AP)).ToList();
+
+            int score = 0;
+            for (int time = 0; ; time++)
+            {
+                npcs = npcs.OrderBy(x => x.Y).ThenBy(x => x.X).ToList();
+                for (int i = 0; i < npcs.Count; i++)
+                {
+                    var n = npcs[i];
+                    var targets = npcs.FindAll(x => !x.Type.Equals(n.Type));
+                    if (targets.Count == 0)
+                    {
+                        score = time * npcs.Sum(x => x.HP);
+                        break;
+                    }
+                    if (!targets.Any(t => (Math.Abs(n.X - t.X) + Math.Abs(n.Y - t.Y)) == 1))
+                    {
+                        HashSet<Point> inrange = new HashSet<Point>();
+                        foreach (var t in targets)
+                        {
+                            foreach (var d in dirs)
+                            {
+                                var p = new Point(t.X + d.X, t.Y + d.Y);
+                                if (map[p.Y][p.X] == '.' && npcs.All(x => x.X != p.X || x.Y != p.Y))
+                                    inrange.Add(p);
+                            }
+                        }
+
+                        Queue<Point> queue = new Queue<Point>();
+                        Dictionary<Point, Point> previous = new Dictionary<Point, Point>();
+                        queue.Enqueue(new Point(n.X, n.Y));
+                        previous.Add(new Point(n.X, n.Y), new Point(-1, -1));
+                        while (queue.Count > 0)
+                        {
+                            var p = queue.Dequeue();
+                            foreach (var d in dirs)
+                            {
+                                var m = new Point(p.X + d.X, p.Y + d.Y);
+                                if (previous.ContainsKey(m) || !(map[m.Y][m.X] == '.' && npcs.All(x => x.X != m.X || x.Y != m.Y)))
+                                    continue;
+                                queue.Enqueue(m);
+                                previous.Add(m, new Point(p.X, p.Y));
+                            }
+                        }
+
+                        var paths = inrange.Select(x => new Point(x.X, x.Y, GetPath(new Point(x.X, x.Y), previous, n))).ToList();
+                        paths = paths.Where(x => x.Path != null).OrderBy(x => x.Path.Count).ThenBy(x => x.Y).ThenBy(x => x.X).ToList();
+                        var path = paths.FirstOrDefault();
+                        if (path != null && path.Path != null)
+                        {
+                            n.X = path.Path[0].X;
+                            n.Y = path.Path[0].Y;
+                        }
+
+                    }
+
+                    var target = targets.Where(t => (Math.Abs(n.X - t.X) + Math.Abs(n.Y - t.Y)) == 1).OrderBy(t => t.HP).ThenBy(t => t.Y).ThenBy(t => t.X).FirstOrDefault();
+                    if (target == null)
+                        continue;
+                    target.HP -= n.AP;
+
+                    if (target.HP > 0)
+                        continue;
+
+                    int index = npcs.IndexOf(target);
+                    npcs.RemoveAt(index);
+                    if (index < i)
+                        i--;
+                }
+                if (score != 0)
+                    break;
+            }
+
+            int score2 = 0;
+            for (int atk = 4; ; atk++)
+            {
+                npcs = orig.Select(x => new NPC(x.X, x.Y, x.Type, x.HP, x.AP)).ToList();
+                foreach (var n in npcs)
+                    if (n.Type.Equals('E'))
+                        n.AP = atk;
+                bool elf_dead = false;
+                for (int time = 0; ; time++)
+                {
+                    npcs = npcs.OrderBy(x => x.Y).ThenBy(x => x.X).ToList();
+                    for (int i = 0; i < npcs.Count; i++)
+                    {
+                        var n = npcs[i];
+                        var targets = npcs.FindAll(x => !x.Type.Equals(n.Type));
+                        if (targets.Count == 0)
+                        {
+                            score2 = time * npcs.Sum(x => x.HP);
+                            break;
+                        }
+                        if (!targets.Any(t => (Math.Abs(n.X - t.X) + Math.Abs(n.Y - t.Y)) == 1))
+                        {
+                            HashSet<Point> inrange = new HashSet<Point>();
+                            foreach (var t in targets)
+                            {
+                                foreach (var d in dirs)
+                                {
+                                    var p = new Point(t.X + d.X, t.Y + d.Y);
+                                    if (map[p.Y][p.X] == '.' && npcs.All(x => x.X != p.X || x.Y != p.Y))
+                                        inrange.Add(p);
+                                }
+                            }
+
+                            Queue<Point> queue = new Queue<Point>();
+                            Dictionary<Point, Point> previous = new Dictionary<Point, Point>();
+                            queue.Enqueue(new Point(n.X, n.Y));
+                            previous.Add(new Point(n.X, n.Y), new Point(-1, -1));
+                            while (queue.Count > 0)
+                            {
+                                var p = queue.Dequeue();
+                                foreach (var d in dirs)
+                                {
+                                    var m = new Point(p.X + d.X, p.Y + d.Y);
+                                    if (previous.ContainsKey(m) || !(map[m.Y][m.X] == '.' && npcs.All(x => x.X != m.X || x.Y != m.Y)))
+                                        continue;
+                                    queue.Enqueue(m);
+                                    previous.Add(m, new Point(p.X, p.Y));
+                                }
+                            }
+
+                            var paths = inrange.Select(x => new Point(x.X, x.Y, GetPath(new Point(x.X, x.Y), previous, n))).ToList();
+                            paths = paths.Where(x => x.Path != null).OrderBy(x => x.Path.Count).ThenBy(x => x.Y).ThenBy(x => x.X).ToList();
+                            var path = paths.FirstOrDefault();
+                            if (path != null && path.Path != null)
+                            {
+                                n.X = path.Path[0].X;
+                                n.Y = path.Path[0].Y;
+                            }
+
+                        }
+
+                        var target = targets.Where(t => (Math.Abs(n.X - t.X) + Math.Abs(n.Y - t.Y)) == 1).OrderBy(t => t.HP).ThenBy(t => t.Y).ThenBy(t => t.X).FirstOrDefault();
+                        if (target == null)
+                            continue;
+                        target.HP -= n.AP;
+
+                        if (target.HP > 0)
+                            continue;
+
+                        if (target.Type.Equals('E'))
+                        {
+                            elf_dead = true;
+                            break;
+                        }
+
+                        int index = npcs.IndexOf(target);
+                        npcs.RemoveAt(index);
+                        if (index < i)
+                            i--;
+                    }
+                    if (elf_dead || score2 != 0)
+                        break;
+                }
+                if (score2 != 0)
+                    break;
+            }
+
+
+            Console.WriteLine("Day 15, Problem 1: " + score);
+            Console.WriteLine("Day 15, Problem 2: " + score2);
+        }
+
+        private static List<Point> GetPath(Point dest, Dictionary<Point, Point> previous, NPC n)
+        {
+            if (!previous.ContainsKey(dest))
+                return null;
+            List<Point> path = new List<Point>();
+            var p = new Point(dest.X, dest.Y);
+            while (p.X != n.X || p.Y != n.Y)
+            {
+                path.Add(new Point(p.X, p.Y));
+                p = previous[p];
+            }
+            path.Reverse();
+            return path;
+        }
+
+        private class NPC
+        {
+            public int X
+            { get; set; }
+            public int Y
+            { get; set; }
+            public char Type
+            { get; }
+            public int HP
+            { get; set; }
+            public int AP
+            { get; set; }
+            public NPC(int x, int y, char type, int hp, int ap)
+            {
+                X = x;
+                Y = y;
+                Type = type;
+                HP = hp;
+                AP = ap;
+            }
         }
 
         /// <summary>
