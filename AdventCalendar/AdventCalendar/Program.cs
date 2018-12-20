@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 namespace AdventCalendar
@@ -2326,9 +2324,101 @@ namespace AdventCalendar
         static void Problem20(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 20, Problem 1: ");
-            Console.WriteLine("Day 20, Problem 2: ");
+            var input = line[0].Substring(1, line[0].Length - 2);
+            int size = 1000;
+            List<List<int>> rooms = new List<List<int>>();
+            for (int i = 0; i < size; i++)
+            {
+                var l = new List<int>();
+                for (int j = 0; j < size; j++)
+                    l.Add(int.MaxValue);
+                rooms.Add(l);
+            }
+
+            rooms[size / 2][size / 2] = 0;
+            Eval(input, ref rooms, size / 2, size / 2);
+
+            int max = 0;
+            int over_1k = 0;
+            foreach (var y in rooms)
+                foreach (var x in y)
+                {
+                    if (x != int.MaxValue)
+                        max = Math.Max(max, x);
+                    if (x != int.MaxValue && x >= 1000)
+                        over_1k++;
+                }
+
+            Console.WriteLine("Day 20, Problem 1: " + max);
+            Console.WriteLine("Day 20, Problem 2: "+ over_1k);
+        }
+
+        /// <summary>
+        /// Helper for day 20.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private static void Eval(string s, ref List<List<int>> rooms, int x, int y)
+        {
+            int i;
+            for (i = 0; i < s.Length && !s[i].Equals('('); i++)
+            {
+                int new_x = x;
+                int new_y = y;
+                switch (s[i])
+                {
+                    case 'N':
+                        new_y--;
+                        break;
+                    case 'E':
+                        new_x++;
+                        break;
+                    case 'S':
+                        new_y++;
+                        break;
+                    case 'W':
+                        new_x--;
+                        break;
+                }
+                rooms[new_y][new_x] = Math.Min(rooms[new_y][new_x], rooms[y][x] + 1);
+                x = new_x;
+                y = new_y;
+            }
+            if (i == s.Length)
+                return;
+            int j = i + 1;
+            int depth = 1;
+            for (; ; j++)
+            {
+                if (s[j].Equals('('))
+                    depth++;
+                else if (s[j].Equals(')'))
+                    depth--;
+                if (depth == 0)
+                    break;
+            }
+            string s2 = s.Substring(i + 1, j - i - 1);
+            for (; ; )
+            {
+                int k;
+                int depth2 = 0;
+                for (k = 0; k < s2.Length; k++)
+                {
+                    if (s2[k].Equals('('))
+                        depth2++;
+                    else if (s2[k].Equals(')'))
+                        depth2--;
+                    if (depth2 == 0 && s2[k].Equals('|'))
+                        break;
+                }
+                Eval(s2.Substring(0, k), ref rooms, x, y);
+                if (k == s2.Length)
+                    break;
+                s2 = s2.Substring(k + 1);
+            }
+            if (j < s.Length - 1)
+                Eval(s.Substring(j + 1),ref rooms, x, y);
         }
 
         /// <summary>
