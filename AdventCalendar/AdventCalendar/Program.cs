@@ -16,7 +16,7 @@ namespace AdventCalendar
             //Problem5(@"..\..\problem5.txt");
             //Problem6(@"..\..\problem6.txt");
             //Problem7(@"..\..\problem7.txt");
-            //Problem8(@"../../problem8.txt");
+            //Problem8(@"..\..\problem8.txt");
             //Problem9(@"..\..\problem9.txt");
             //Problem10(@"..\..\problem10.txt");
             //Problem11(@"..\..\problem11.txt");
@@ -30,8 +30,8 @@ namespace AdventCalendar
             //Problem19(@"..\..\problem19.txt");
             //Problem20(@"..\..\problem20.txt");
             //Problem21(@"..\..\problem21.txt");
-            Problem22(@"..\..\problem22.txt");
-            Problem23(@"..\..\problem23.txt");
+            //Problem22(@"..\..\problem22.txt");
+            //Problem23(@"..\..\problem23.txt");
             Problem24(@"..\..\problem24.txt");
             Problem25(@"..\..\problem25.txt");
             Console.ReadLine();
@@ -2532,9 +2532,81 @@ namespace AdventCalendar
         static void Problem22(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 22, Problem 1: ");
-            Console.WriteLine("Day 22, Problem 2: ");
+            char[] delims = { ' ', ',' };
+            int depth = int.Parse(line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]);
+            int target_x = int.Parse(line[1].Split(delims, StringSplitOptions.RemoveEmptyEntries)[1]);
+            int target_y = int.Parse(line[1].Split(delims, StringSplitOptions.RemoveEmptyEntries)[2]);
+            int[,] geologic = new int[1000, 1000];
+            int[,] erosion = new int[1000, 1000];
+            int[,] cave = new int[1000, 1000];
+
+            for (int i = 0; i < 1000; i++)
+            {
+                for (int j = 0; j < 1000; j++)
+                {
+                    if (i == 0 && j == 0)
+                        geologic[j, i] = 0;
+                    else if (i == target_y && j == target_x)
+                        geologic[j, i] = 0;
+                    else if (i == 0)
+                        geologic[j, i] = j * 16807;
+                    else if (j == 0)
+                        geologic[j, i] = i * 48271;
+                    else
+                        geologic[j, i] = erosion[j - 1, i] * erosion[j, i - 1];
+
+                    erosion[j, i] = (geologic[j, i] + depth) % 20183;
+                    cave[j, i] = erosion[j, i] % 3;
+                }
+            }
+
+            int risk = 0;
+            for (int i = 0; i < target_y + 1; i++)
+                for (int j = 0; j < target_x + 1; j++)
+                    risk += cave[j, i];
+
+            Queue<(int x, int y, int tool, int switching, int t)> queue = new Queue<(int x, int y, int tool, int switching, int t)>();
+            HashSet<(int x, int y, int tool)> seen = new HashSet<(int x, int y, int tool)>();
+            queue.Enqueue((0, 0, 1, 0, 0));
+            seen.Add((0, 0, 1));
+
+            int time = 0;
+            while (queue.Count > 0)
+            {
+                (int x, int y, int tool, int switching, int minutes) = queue.Dequeue();
+                if (switching > 0)
+                {
+                    if (switching != 1 || seen.Add((x, y, tool)))
+                        queue.Enqueue((x, y, tool, switching - 1, minutes + 1));
+                    continue;
+                }
+
+                if (x == target_x && y == target_y && tool == 1)
+                {
+                    time = minutes;
+                    break;
+                }
+
+                if (cave[x + 1, y] != tool && seen.Add((x + 1, y, tool)))
+                    queue.Enqueue((x + 1, y, tool, 0, minutes + 1));
+
+                if (x - 1 >= 0)
+                    if (cave[x - 1, y] != tool && seen.Add((x - 1, y, tool)))
+                        queue.Enqueue((x - 1, y, tool, 0, minutes + 1));
+
+                if (cave[x, y + 1] != tool && seen.Add((x, y + 1, tool)))
+                    queue.Enqueue((x, y + 1, tool, 0, minutes + 1));
+
+                if (y - 1 >= 0)
+                    if (cave[x, y - 1] != tool && seen.Add((x, y - 1, tool)))
+                        queue.Enqueue((x, y - 1, tool, 0, minutes + 1));
+
+                queue.Enqueue((x, y, (cave[x, y] + 1) % 3, 6, minutes + 1));
+                queue.Enqueue((x, y, (cave[x, y] + 2) % 3, 6, minutes + 1));
+            }
+
+            Console.WriteLine("Day 22, Problem 1: " + risk);
+            Console.WriteLine("Day 22, Problem 2: " + time);
         }
 
         /// <summary>
@@ -2544,9 +2616,49 @@ namespace AdventCalendar
         static void Problem23(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
-            Console.WriteLine("Day 23, Problem 1: ");
-            Console.WriteLine("Day 23, Problem 2: ");
+            char[] delims = { ' ', ',', '=', '<', '>' };
+            Dictionary<(int x, int y, int z), int> nano = new Dictionary<(int x, int y, int z), int>();
+            int max_r = 0;
+            (int x, int y, int z) max_nano = (0, 0, 0);
+            foreach (var l in line)
+            {
+                var s = l.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                nano.Add((int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3])), int.Parse(s[5]));
+                if (int.Parse(s[5]) > max_r)
+                {
+                    max_r = int.Parse(s[5]);
+                    max_nano = (int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
+                }
+            }
+            int in_range = 0;
+            foreach (var n in nano)
+                if (Math.Abs(n.Key.x - max_nano.x) + Math.Abs(n.Key.y - max_nano.y) + Math.Abs(n.Key.z - max_nano.z) <= max_r)
+                    in_range++;
+
+            Queue<(int, int)> q = new Queue<(int, int)>();
+            foreach (var n in nano)
+            {
+                int d = Math.Abs(n.Key.x) + Math.Abs(n.Key.y) + Math.Abs(n.Key.z);
+                q.Enqueue((Math.Max(0, d - n.Value),1));
+                q.Enqueue((d + n.Value, -1));
+            }
+            q = new Queue<(int, int)>(q.OrderBy(x => x.Item1));
+            int count = 0;
+            int max = 0;
+            int best = 0;
+            while(q.Count > 0)
+            {
+                (int dist, int end) = q.Dequeue();
+                count += end;
+                if (count > max)
+                {
+                    best = dist;
+                    max = count;
+                }
+            }
+
+            Console.WriteLine("Day 23, Problem 1: " + in_range);
+            Console.WriteLine("Day 23, Problem 2: " + best);
         }
 
         /// <summary>
@@ -2557,6 +2669,9 @@ namespace AdventCalendar
         {
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
+
+
+
             Console.WriteLine("Day 24, Problem 1: ");
             Console.WriteLine("Day 24, Problem 2: ");
         }
