@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace AdventCalendar
 {
@@ -32,7 +33,7 @@ namespace AdventCalendar
             //Problem21(@"..\..\problem21.txt");
             //Problem22(@"..\..\problem22.txt");
             //Problem23(@"..\..\problem23.txt");
-            Problem24(@"..\..\problem24.txt");
+            //Problem24(@"..\..\problem24.txt");
             Problem25(@"..\..\problem25.txt");
             Console.ReadLine();
         }
@@ -2639,14 +2640,14 @@ namespace AdventCalendar
             foreach (var n in nano)
             {
                 int d = Math.Abs(n.Key.x) + Math.Abs(n.Key.y) + Math.Abs(n.Key.z);
-                q.Enqueue((Math.Max(0, d - n.Value),1));
+                q.Enqueue((Math.Max(0, d - n.Value), 1));
                 q.Enqueue((d + n.Value, -1));
             }
             q = new Queue<(int, int)>(q.OrderBy(x => x.Item1));
             int count = 0;
             int max = 0;
             int best = 0;
-            while(q.Count > 0)
+            while (q.Count > 0)
             {
                 (int dist, int end) = q.Dequeue();
                 count += end;
@@ -2670,10 +2671,201 @@ namespace AdventCalendar
             var line = File.ReadAllLines(__input);
             char[] delims = { ' ' };
 
+            List<Group> units = new List<Group>();
+            var immuneSystem = false;
+            foreach (var l in line)
+            {
+                if (l == "Immune System:")
+                    immuneSystem = true;
+                else if (l == "Infection:")
+                    immuneSystem = false;
+                else if (l != "")
+                {
+                    var rx = @"(\d+) units each with (\d+) hit points(.*)with an attack that does (\d+)(.*)damage at initiative (\d+)";
+                    var m = Regex.Match(l, rx);
 
+                    var str = m.Groups[3].Value.Trim();
+                    var immune = "";
+                    var weak = "";
+                    if (str != "")
+                    {
+                        str = str.Substring(1, str.Length - 2);
+                        foreach (var part in str.Split(new char[] { ';' }))
+                        {
+                            var k = part.Split(new string[] { " to " }, StringSplitOptions.RemoveEmptyEntries);
+                            var w = k[0].Trim();
+                            if (w == "immune")
+                                immune = k[1];
+                            else if (w == "weak")
+                                weak = k[1];
+                        }
+                    }
+                    Group g = new Group(int.Parse(m.Groups[1].Value),
+                                        int.Parse(m.Groups[2].Value),
+                                        immune,
+                                        weak,
+                                        int.Parse(m.Groups[4].Value),
+                                        m.Groups[5].Value.Trim(),
+                                        int.Parse(m.Groups[6].Value),
+                                        immuneSystem ? "immune" : "infection");
+                    units.Add(g);
+                }
+            }
+            var n_units = units.Select(x => new Group(x.Units, x.HP, x.Immune, x.Weak, x.AP, x.AP_Type, x.Initiative, x.Type)).ToList();
+            var result = EvaluateImmuneSystem(n_units, 0);
+            var score = result.Sum(x => x.Units);
+            var immune_score = 0;
+            for (int i = 1; ; i++)
+            {
+                n_units = units.Select(x => new Group(x.Units, x.HP, x.Immune, x.Weak, x.AP, x.AP_Type, x.Initiative, x.Type)).ToList();
+                result = EvaluateImmuneSystem(n_units, i);
 
-            Console.WriteLine("Day 24, Problem 1: ");
-            Console.WriteLine("Day 24, Problem 2: ");
+                bool immune_win = true;
+                foreach (var u in result)
+                    if (u.Type.Equals("infection"))
+                        immune_win = false;
+                if (immune_win)
+                {
+                    immune_score = result.Sum(x => x.Units);
+                    break;
+                }
+
+            }
+
+            Console.WriteLine("Day 24, Problem 1: " + score);
+            Console.WriteLine("Day 24, Problem 2: " + immune_score);
+        }
+
+        /// <summary>
+        /// Helper for day 24.
+        /// </summary>
+        /// <param name="units"></param>
+        /// <param name="boost"></param>
+        /// <returns></returns>
+        private static List<Group> EvaluateImmuneSystem(List<Group> units, int boost)
+        {
+            foreach (var u in units)
+                if (u.Type.Equals("immune"))
+                    u.AP += boost;
+
+            while (true)
+            {
+                units = units.OrderByDescending(x => x.EP()).ThenByDescending(x => x.Initiative).ToList();
+                foreach (var u in units)
+                {
+                    u.Under_Attack = false;
+                    u.Target = -1;
+                }
+
+                for (int i = 0; i < units.Count; i++)
+                {
+                    List<(int num, int dmg, int ep, int init)> targets = new List<(int num, int dmg, int ep, int init)>();
+                    for (int j = 0; j < units.Count; j++)
+                    {
+                        if (units[i].Type == units[j].Type)
+                            continue;
+                        var d = 0;
+                        if (units[j].Immune.Contains(units[i].AP_Type))
+                            d = 0;
+                        else if (units[j].Weak.Contains(units[i].AP_Type))
+                            d = units[i].EP() * 2;
+                        else
+                            d = units[i].EP();
+                        if (!units[j].Under_Attack && d > 0)
+                            targets.Add((j, d, units[j].EP(), units[j].Initiative));
+                    }
+                    targets = targets.OrderByDescending(x => x.dmg).ThenByDescending(x => x.ep).ThenByDescending(x => x.init).ToList();
+                    if (targets.Count != 0)
+                    {
+                        units[i].Target = targets[0].num;
+                        units[targets[0].num].Under_Attack = true;
+                    }
+                }
+
+                var attacking = units.OrderByDescending(x => x.Initiative).ToList();
+
+                var has_attacks = false;
+                foreach (var u in units)
+                    if (u.Target != -1)
+                        has_attacks = true;
+                if (!has_attacks)
+                    break;
+
+                var effective_attack = false;
+
+                for (int i = 0; i < attacking.Count; i++)
+                {
+                    if (attacking[i].Target == -1)
+                        continue;
+
+                    var d = 0;
+                    if (units[attacking[i].Target].Immune.Contains(attacking[i].AP_Type))
+                        d = 0;
+                    else if (units[attacking[i].Target].Weak.Contains(attacking[i].AP_Type))
+                        d = attacking[i].EP() * 2;
+                    else
+                        d = attacking[i].EP();
+
+                    var attack = (d / units[attacking[i].Target].HP);
+                    if (attack > 0)
+                        effective_attack = true;
+
+                    units[attacking[i].Target].Units -= attack;
+                    if (units[attacking[i].Target].Units < 0)
+                        units[attacking[i].Target].Units = 0;
+                }
+                if (!effective_attack)
+                    break;
+
+                units = units.Where(x => x.Units != 0).ToList();
+                               
+                bool has_immune = false;
+                bool has_infection = false;
+                foreach (var u in units)
+                {
+                    if (u.Type.Equals("immune"))
+                        has_immune = true;
+                    else if (u.Type.Equals("infection"))
+                        has_infection = true;
+                }
+                if (!has_immune || !has_infection)
+                    break;
+            }
+            return units;
+        }
+
+        /// <summary>
+        /// Helper for day 24.
+        /// </summary>
+        private class Group
+        {
+            public int Units { get; set; }
+            public int HP { get; set; }
+            public string Immune { get; set; }
+            public string Weak { get; set; }
+            public int AP { get; set; }
+            public string AP_Type { get; set; }
+            public int Initiative { get; set; }
+            public string Type { get; set; }
+            public bool Under_Attack { get; set; }
+            public int Target { get; set; }
+            public int EP()
+            {
+                return Units * AP;
+            }
+            public Group(int units, int hp, string immune, string weak, int ap, string ap_type, int initiative, string type)
+            {
+                Units = units;
+                HP = hp;
+                Immune = immune;
+                Weak = weak;
+                AP = ap;
+                AP_Type = ap_type;
+                Initiative = initiative;
+                Type = type;
+                Under_Attack = false;
+                Target = -1;
+            }
         }
 
         /// <summary>
