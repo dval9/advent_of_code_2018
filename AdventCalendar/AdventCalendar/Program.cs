@@ -2818,7 +2818,7 @@ namespace AdventCalendar
                     break;
 
                 units = units.Where(x => x.Units != 0).ToList();
-                               
+
                 bool has_immune = false;
                 bool has_infection = false;
                 foreach (var u in units)
@@ -2875,7 +2875,28 @@ namespace AdventCalendar
         static void Problem25(string __input)
         {
             var line = File.ReadAllLines(__input);
-            char[] delims = { ' ' };
+            char[] delims = { ',' };
+
+            List<List<(int x, int y, int z, int w)>> constellations = new List<List<(int x, int y, int z, int w)>>();
+            var s = line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+            (int x, int y, int z, int w) = (int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
+            constellations.Add(new List<(int x, int y, int z, int w)>());
+            constellations[0].Add((x, y, z, w));
+
+            for (int i = 1; i < line.Length; i++)
+            {
+                s = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                (x, y, z, w) = (int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
+                foreach (var c in constellations)
+                {
+                    bool contains = false;
+                    foreach (var p in c)
+                    {
+
+                    }
+                }
+
+            }
             Console.WriteLine("Day 25, Problem 1: ");
             Console.WriteLine("Day 25, Problem 2: ");
         }
