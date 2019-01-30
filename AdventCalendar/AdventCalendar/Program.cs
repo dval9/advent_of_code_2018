@@ -2878,27 +2878,53 @@ namespace AdventCalendar
             char[] delims = { ',' };
 
             List<List<(int x, int y, int z, int w)>> constellations = new List<List<(int x, int y, int z, int w)>>();
-            var s = line[0].Split(delims, StringSplitOptions.RemoveEmptyEntries);
-            (int x, int y, int z, int w) = (int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
-            constellations.Add(new List<(int x, int y, int z, int w)>());
-            constellations[0].Add((x, y, z, w));
-
-            for (int i = 1; i < line.Length; i++)
+            
+            for (int i = 0; i < line.Length; i++)
             {
-                s = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
-                (x, y, z, w) = (int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
-                foreach (var c in constellations)
-                {
-                    bool contains = false;
-                    foreach (var p in c)
-                    {
+                var s = line[i].Split(delims, StringSplitOptions.RemoveEmptyEntries);
+                (int x, int y, int z, int w) = (int.Parse(s[0]), int.Parse(s[1]), int.Parse(s[2]), int.Parse(s[3]));
+                List<int> contained = new List<int>();
 
+                for (int j = 0; j < constellations.Count; j++)
+                {
+                    foreach (var p in constellations[j])
+                    {
+                        var d = Math.Abs(p.x - x) + Math.Abs(p.y - y) + Math.Abs(p.z - z) + Math.Abs(p.w - w);
+                        if (d <= 3)
+                        {
+                            contained.Add(j);
+                            break;
+                        }                            
                     }
                 }
-
+                if (contained.Count == 0)
+                {
+                    var p = new List<(int x, int y, int z, int w)>
+                    {
+                        (x, y, z, w)
+                    };
+                    constellations.Add(p);
+                }
+                else if (contained.Count > 1)
+                {
+                    constellations[contained[0]].Add((x, y, z, w));
+                    var to_remove = new List<List<(int x, int y, int z, int w)>>();
+                    for (int j = 1; j < contained.Count; j++)
+                    {
+                        foreach (var p in constellations[contained[j]])
+                            constellations[contained[0]].Add((p.x, p.y, p.z, p.w));
+                        to_remove.Add(constellations[contained[j]]);
+                    }
+                    foreach (var c in to_remove)
+                        constellations.Remove(c);
+                }
+                else
+                {
+                    constellations[contained[0]].Add((x, y, z, w));
+                }
             }
-            Console.WriteLine("Day 25, Problem 1: ");
-            Console.WriteLine("Day 25, Problem 2: ");
+            Console.WriteLine("Day 25, Problem 1: " + constellations.Count.ToString());
+            Console.WriteLine("Day 25, Problem 2: " + "DONE!");
         }
     }
 }
